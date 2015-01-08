@@ -12,31 +12,42 @@ html(lang="en", data-ng-app="app")
       span.glyphicon.glyphicon-time
       span und
 
-    .app(data-ng-controller="chowhound").col-md-6.col-md-offset-3
-      .loading(data-ng-show="{{ loading.show }}")
+    .app(data-ng-controller="chowhound")
+      .loading(data-ng-show="loading.show")
         span.glyphicon.glyphicon-time
 
-      .login(data-ng-show="{{ login.show }}")
+      .login(data-ng-show="login.show")
         .panel.panel-primary
           .panel-heading Login
-          .panel-body Login Form
+          .panel-body.text-center
+            form(data-ng-submit="login.submit()")
+              .form-group
+                input(type="email", class="form-control", placeholder="Email", data-ng-model="login.username")
+                input(type="password", class="form-control", placeholder="Password", data-ng-model="login.password")
+                button.btn.btn-primary(type="submit") Submit
+            a(href="#", data-ng-click="login.register()") Sign up
 
-      .profile(data-ng-show="{{ profile.show }}")
+      .register(data-ng-show="register.show").col-sm-6.col-sm-offset-3
+        .panel.panel-primary
+          .panel-heading Register
+          .panel-body Register Form
+
+      .profile(data-ng-show="profile.show").col-md-6.col-md-offset-3
         .panel.panel-primary
           .panel-heading Profile
           .panel-body Login Form
 
-      .graph(data-ng-show="{{ graph.show }}")
+      .graph(data-ng-show="graph.show").col-md-6.col-md-offset-3
         .panel.panel-primary
           .panel-heading Graph
           .panel-body Login Form
 
-      .datatable(data-ng-show="{{ datatable.show }}")
+      .datatable(data-ng-show="datatable.show").col-md-6.col-md-offset-3
         .panel.panel-primary
           .panel-heading Datatable
           .panel-body Login Form
 
-      .manager(data-ng-show="{{ manager.show }}")
+      .manager(data-ng-show="{{ manager.show }}").col-md-6.col-md-offset-3
         .panel.panel-primary
           .panel-heading Manager
           .panel-body Login Form
