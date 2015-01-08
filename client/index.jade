@@ -1,9 +1,48 @@
 doctype html
-html(lang="en")
+html(lang="en", data-ng-app="app")
   head
     title Chowhound
     meta(charset="UTF-8")
     link(rel="stylesheet", href=assetURL + 'style.css')
   body
+    header
+      span Ch
+      span.glyphicon.glyphicon-time
+      span wH
+      span.glyphicon.glyphicon-time
+      span und
+
+    .app(data-ng-controller="chowhound").col-md-6.col-md-offset-3
+      .loading(data-ng-show="{{ loading.show }}")
+        span.glyphicon.glyphicon-time
+
+      .login(data-ng-show="{{ login.show }}")
+        .panel.panel-primary
+          .panel-heading Login
+          .panel-body Login Form
+
+      .profile(data-ng-show="{{ profile.show }}")
+        .panel.panel-primary
+          .panel-heading Profile
+          .panel-body Login Form
+
+      .graph(data-ng-show="{{ graph.show }}")
+        .panel.panel-primary
+          .panel-heading Graph
+          .panel-body Login Form
+
+      .datatable(data-ng-show="{{ datatable.show }}")
+        .panel.panel-primary
+          .panel-heading Datatable
+          .panel-body Login Form
+
+      .manager(data-ng-show="{{ manager.show }}")
+        .panel.panel-primary
+          .panel-heading Manager
+          .panel-body Login Form
+
+    footer
+      span Written and created by Seandon Mooy at Rackspace Hosting
+
     script(type='text/javascript', src=assetURL + 'vendor.js')
     script(type='text/javascript', src=assetURL + 'client.js')

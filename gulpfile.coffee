@@ -7,6 +7,7 @@ TODOS = yes # print TODOs found in code
 afterEveryRun = [ 'spec' ] # tasks to run after EVERY set of tasks
 ASSETURL = '/' # base URL to be passed to Jade and Less
 DEVPORT = 8080 # The port gulp-connect will listen on
+BACKENDPORT = 9000 # The port for the node server to run on
 
 # A friendly task list!
 # Watch will automatically search for all configurations with a 'tasks' list that can be run
@@ -23,16 +24,14 @@ tasks = {
   fonts: [
     {
       path: './client/fonts/**/*'
-      watch: './client/fonts/*'
       output: 'public/fonts'
       tasks: [ 'assets' ]
     }
   ]
   images: [
     {
-      path: './client/assets/**/*'
-      watch: './client/assets/*'
-      output: 'public/assets'
+      path: './client/images/**/*'
+      output: 'public/images'
       tasks: [ 'assets' ]
     }
   ]
@@ -80,6 +79,14 @@ tasks = {
       watch: 'client/vendor/*.js'
       output: 'public/vendor.js'
       tasks: [ 'vendor' ]
+    }
+  ]
+  maps: [
+    {
+      path: './client/vendor/*.map'
+      watch: 'client/vendor/*.map'
+      output: 'public/'
+      tasks: [ 'maps' ]
     }
   ]
 }
@@ -131,7 +138,7 @@ gulp.task 'watch', ->
     doWatch conf
   setTimeout ->
     seq 'todos', 'spec'
-  , 100
+  , 2000
 
 # Start gulp-watch with a task configuration
 doWatch = (conf) ->
@@ -157,6 +164,14 @@ gulp.task 'connect', ->
     root: 'public'
     port: DEVPORT
     livereload: yes
+    middleware: (connect, o) ->
+      [(->
+        url = require("url")
+        proxy = require("proxy-middleware")
+        options = url.parse("http://localhost:" + BACKENDPORT + "/api")
+        options.route = '/api'
+        proxy(options)
+      )()]
   }
 
 gulp.task 'server', ->
@@ -166,7 +181,10 @@ gulp.task 'server', ->
     # turn on verbose mode and notice "0 files watched"
     watch: 'server'
     ext: 'coffee'
-    env: { 'NODE_ENV': NODE_ENV }
+    env: {
+      'NODE_ENV': NODE_ENV,
+      'LISTEN': BACKENDPORT
+    }
     ignore: ['node_modules']
     verbose: no
     dump: no
@@ -247,6 +265,13 @@ gulp.task 'spec', ->
 
 gulp.task 'assets', ->
   gatherTasks 'assets', (details) ->
+    stream = gulp.src details.path
+      .pipe gulp.dest details.output
+      .on 'error', gutil.log
+    if WATCHING then stream.pipe connect.reload()
+
+gulp.task 'maps', ->
+  gatherTasks 'maps', (details) ->
     stream = gulp.src details.path
       .pipe gulp.dest details.output
       .on 'error', gutil.log

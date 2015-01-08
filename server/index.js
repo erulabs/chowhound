@@ -1,2 +1,4 @@
 require('coffee-script/register');
-require('./server.coffee');
+var Server = require('./server.coffee');
+
+var instance = new Server();
