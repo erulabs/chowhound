@@ -4,7 +4,7 @@ var AppWindow, Chowhound, DatatableWindow, GraphWindow, LoginWindow, ManagerWind
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-app = angular.module('app', []);
+app = angular.module('app', ['ngCookies']);
 
 SECRET = {
   token: {
@@ -39,13 +39,31 @@ LoginWindow = (function(_super) {
       password: this.password
     }).success((function(_this) {
       return function(data, status, headers, config) {
-        if (data.error != null) {
+        if (data.error) {
           return alert(data.error);
         } else {
           _this.show = false;
-          _this.app.$scope.graph.init();
-          _this.app.$scope.datatable.init();
-          return _this.app.$scope.profile.init();
+          return _this.login(data);
+        }
+      };
+    })(this)).error(function(data, status, headers, config) {
+      return console.log('error', data);
+    });
+  };
+
+  LoginWindow.prototype.tokenLogin = function(username, token) {
+    return this.app.$http.post('/api/new/login', {
+      username: username,
+      token: token
+    }).success((function(_this) {
+      return function(data, status, headers, config) {
+        if (data.error) {
+          alert(data.error);
+          _this.app.$cookieStore.remove('token');
+          return _this.app.$scope.login.show = true;
+        } else {
+          _this.show = false;
+          return _this.login(data);
         }
       };
     })(this)).error(function(data, status, headers, config) {
@@ -56,6 +74,15 @@ LoginWindow = (function(_super) {
   LoginWindow.prototype.register = function() {
     this.show = false;
     return this.app.$scope.register.show = true;
+  };
+
+  LoginWindow.prototype.login = function(data) {
+    console.log('login action', data);
+    this.app.$scope.graph.init();
+    this.app.$scope.datatable.init();
+    this.app.$scope.profile.init();
+    this.app.$cookies.token = data.token;
+    return this.app.$cookies.username = data.username;
   };
 
   return LoginWindow;
@@ -70,17 +97,24 @@ RegisterWindow = (function(_super) {
     this.show = show;
     this.username = '';
     this.password = '';
+    this.groups = '';
   }
 
   RegisterWindow.prototype.submit = function() {
     return this.app.$http.post('/api/register', {
       username: this.username,
-      password: this.password
-    }).success(function(data, status, headers, config) {
-      if (data.error != null) {
-        return alert(data.error);
-      }
-    }).error(function(data, status, headers, config) {
+      password: this.password,
+      groups: this.groups
+    }).success((function(_this) {
+      return function(data, status, headers, config) {
+        if (data.error) {
+          return alert(data.error);
+        } else {
+          _this.show = false;
+          return _this.app.$scope.login.login(data);
+        }
+      };
+    })(this)).error(function(data, status, headers, config) {
       return console.log('error', data);
     });
   };
@@ -154,9 +188,11 @@ ManagerWindow = (function(_super) {
 })(AppWindow);
 
 app.controller('chowhound', Chowhound = (function() {
-  function Chowhound($scope, $http) {
+  function Chowhound($scope, $http, $cookies, $cookieStore) {
     this.$scope = $scope;
     this.$http = $http;
+    this.$cookies = $cookies;
+    this.$cookieStore = $cookieStore;
     this.$scope.loading = new AppWindow(this, false);
     this.$scope.login = new LoginWindow(this, false);
     this.$scope.register = new RegisterWindow(this, false);
@@ -164,8 +200,9 @@ app.controller('chowhound', Chowhound = (function() {
     this.$scope.graph = new GraphWindow(this, false);
     this.$scope.datatable = new DatatableWindow(this, false);
     this.$scope.manager = new ManagerWindow(this, false);
-    if (SECRET.token.id) {
-      this.loadData();
+    console.log(this.$cookies.token, this.$cookies.username);
+    if (this.$cookies.token && this.$cookies.username) {
+      this.$scope.login.tokenLogin(this.$cookies.username, this.$cookies.token);
     } else {
       this.$scope.login.show = true;
     }
@@ -174,7 +211,7 @@ app.controller('chowhound', Chowhound = (function() {
   Chowhound.prototype.loadData = function() {
     var self;
     self = this;
-    if (SECRET.token.id) {
+    if (this.$cookies.token) {
       return this.$http({
         url: '/api/data'
       }).success(function(data, status, headers, config) {

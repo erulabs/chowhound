@@ -1,6 +1,6 @@
 'use strict'
 
-app = angular.module 'app', []
+app = angular.module 'app', ['ngCookies']
 
 SECRET = {
   token: {
@@ -22,32 +22,55 @@ class LoginWindow extends AppWindow
       password: @password
     })
       .success (data, status, headers, config) =>
-        if data.error?
+        if data.error
           alert data.error
         else
           @show = false
-          @app.$scope.graph.init()
-          @app.$scope.datatable.init()
-          @app.$scope.profile.init()
+          @login(data)
+          # if manager...
+      .error (data, status, headers, config) ->
+        console.log 'error', data
+  tokenLogin: (username, token) ->
+    @app.$http.post '/api/new/login', { username: username, token: token }
+      .success (data, status, headers, config) =>
+        if data.error
+          alert data.error
+          @app.$cookieStore.remove 'token'
+          @app.$scope.login.show = yes
+        else
+          @show = false
+          @login(data)
           # if manager...
       .error (data, status, headers, config) ->
         console.log 'error', data
   register: ->
     @show = false
     @app.$scope.register.show = yes
+  login: (data) ->
+    console.log 'login action', data
+    @app.$scope.graph.init()
+    @app.$scope.datatable.init()
+    @app.$scope.profile.init()
+    @app.$cookies.token = data.token
+    @app.$cookies.username = data.username
 
 class RegisterWindow extends AppWindow
   constructor: (@app, @show) ->
     @username = ''
     @password = ''
+    @groups = ''
   submit: ->
     @app.$http.post('/api/register', {
       username: @username
       password: @password
+      groups: @groups
     })
-      .success (data, status, headers, config) ->
-        if data.error?
+      .success (data, status, headers, config) =>
+        if data.error
           alert data.error
+        else
+          @show = false
+          @app.$scope.login.login(data)
       .error (data, status, headers, config) ->
         console.log 'error', data
   back: ->
@@ -72,7 +95,7 @@ class DatatableWindow extends AppWindow
 class ManagerWindow extends AppWindow
 
 app.controller 'chowhound', class Chowhound
-  constructor: (@$scope, @$http) ->
+  constructor: (@$scope, @$http, @$cookies, @$cookieStore) ->
     @$scope.loading = new AppWindow this, no
     @$scope.login = new LoginWindow this, no
     @$scope.register = new RegisterWindow this, no
@@ -80,14 +103,15 @@ app.controller 'chowhound', class Chowhound
     @$scope.graph = new GraphWindow this, no
     @$scope.datatable = new DatatableWindow this, no
     @$scope.manager = new ManagerWindow this, no
-    if SECRET.token.id
-      @loadData()
+    console.log @$cookies.token, @$cookies.username
+    if @$cookies.token and @$cookies.username
+      @$scope.login.tokenLogin @$cookies.username, @$cookies.token
     else
       @$scope.login.show = yes
 
   loadData: ->
     self = this
-    if SECRET.token.id
+    if @$cookies.token
       @$http { url: '/api/data' }
         .success (data, status, headers, config) ->
           console.log 'done loading', data

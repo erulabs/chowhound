@@ -25,6 +25,8 @@ levelup = require 'levelup'
 crypto  = require 'crypto'
 bodyParser = require 'body-parser'
 multer  = require 'multer'
+randtoken = require 'rand-token'
+UID = randtoken.uid
 
 sha1 = (str, callback) ->
   hmac = crypto.createHmac 'sha1', CRYPTOKEY
@@ -48,11 +50,11 @@ module.exports = class Server
     @db = levelup DBPATH
 
     @app.post '/api/new/login', (req, res) => @newLoginRequest.apply this, [req, res]
-    @app.get '/api/data', @dataRequest
-    @app.post '/api/new/break', @newBreakRequest
-    @app.get '/api/manager', @managerGetRequest
-    @app.post '/api/manager/set', @managerPostRequest
-    @app.post '/api/register', @registerRequest
+    @app.get '/api/data', (req, res) => @dataRequest.apply this, [req, res]
+    @app.post '/api/new/break', (req, res) => @newBreakRequest.apply this, [req, res]
+    @app.get '/api/manager', (req, res) => @managerGetRequest.apply this, [req, res]
+    @app.post '/api/manager/set', (req, res) => @managerPostRequest.apply this, [req, res]
+    @app.post '/api/register', (req, res) => @registerRequest.apply this, [req, res]
 
     @server = @app.listen process.env.LISTEN, =>
       host = @server.address().address
@@ -60,52 +62,69 @@ module.exports = class Server
       console.log 'Listening at http://%s:%s', host, port
 
     @dbget = (key, callback) =>
-      @db.get key, (err, value) ->
+      @db.get key, (err, value) =>
         if err
           if err.type is 'NotFoundError'
             return callback undefined, undefined
           else
+            @log 'DBERROR', err
             return callback err, undefined
         else
           callback false, value
 
-    @dbput: (key, value, callback) =>
-      @db.put key, value, (err) ->
+    @dbput = (key, value, callback) =>
+      @db.put key, value, (err) =>
         if err
+          @log 'DBERROR', err
           return callback err
         else
           callback false, value
 
   registerRequest: (req, res) ->
-    self = this
     if !req.body.username? or !req.body.password?
       res.send { error: 'Supply a username and password' }
     else
-      sha1 req.body.password, (pass) ->
+      sha1 req.body.password, (pass) =>
         userObject = {
           password: pass
+          username: req.body.username
         }
-        self.dbget req.body.username, (e, user) ->
+        this.dbget req.body.username, (e, user) =>
           if user
-            res.send {
-              error: 'email already taken'
-            }
+            res.send { error: 'email already taken' }
           else
-            self.dbput req.body.username, userObject, (e, user) ->
+            this.loginAction(userObject, req, res)
+
+  loginAction: (userObject, req, res) ->
+    userObject.token = UID(32)
+    userObject.expires = (new Date().getTime()) + SESSIONLENGTH
+    this.db.put req.body.username, JSON.stringify(userObject)
+    req.session.userObject = userObject
+    res.send {
+      error: false
+      token: userObject.token
+      expires: userObject.expires
+      username: req.body.username
+    }
 
   newLoginRequest: (req, res) ->
-    self = this
-    if !req.body.username? or !req.body.password?
-      res.send { error: 'Supply a username and password' }
-    else
-      sha1 req.body.password, (pass) ->
-        self.dbget req.body.username, (e, user) ->
-          if user
-            console.log user
+    if req.body.token? and req.body.username?
+      this.dbget req.body.username, (e, userObject) =>
+        try userObject = JSON.parse(userObject)
+        if userObject and userObject.token is req.body.token
+          this.loginAction(userObject, req, res)
+        else
+          res.send { error: 'Login incorrect' }
+    else if req.body.username? and req.body.password?
+      sha1 req.body.password, (pass) =>
+        this.dbget req.body.username, (e, userObject) =>
+          try userObject = JSON.parse(userObject)
+          if userObject and userObject.password is pass
+            this.loginAction(userObject, req, res)
           else
-            res.send {
-              error: 'no such user'
-            }
+            res.send { error: 'Login incorrect' }
+    else
+      res.send { error: 'Supply a username and password' }
 
   dataRequest: (req, res) ->
     if req.session.apikey
@@ -131,3 +150,9 @@ module.exports = class Server
     res.send {
       message: 'already logged in'
     }
+
+  # Stub for proper logger
+  log: ->
+    date = new Date()
+    process.stdout.write(date.toTimeString().split(' ')[0] + ' ')
+    console.log.apply this, arguments

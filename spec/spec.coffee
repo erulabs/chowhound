@@ -1,5 +1,5 @@
 'use strict'
 
 describe 'a test', ->
-  it 'should base', ->
+  it 'should pass', ->
     expect(true).to.equal(true)
