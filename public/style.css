@@ -6309,27 +6309,33 @@ header {
 header .glyphicon-time {
   font-size: 0.55em;
 }
-.login {
+.login,
+.register {
   width: 100%;
   text-align: center;
 }
-.login .panel {
+.login .panel,
+.register .panel {
   width: 300px;
   margin: 0 auto;
 }
-.login .panel .panel-body {
+.login .panel .panel-body,
+.register .panel .panel-body {
   padding: 20px;
   padding-bottom: 8px;
 }
-.login .panel .panel-body input {
+.login .panel .panel-body input,
+.register .panel .panel-body input {
   margin-bottom: 2px;
 }
-.login .panel .panel-body button {
+.login .panel .panel-body button,
+.register .panel .panel-body button {
   margin-top: 1px;
   margin-right: 10px;
   margin-bottom: 0px;
 }
-.login .panel .panel-body .form-group {
+.login .panel .panel-body .form-group,
+.register .panel .panel-body .form-group {
   margin-bottom: 4px;
 }
 .panel-primary {

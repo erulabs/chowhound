@@ -22,15 +22,23 @@ html(lang="en", data-ng-app="app")
           .panel-body.text-center
             form(data-ng-submit="login.submit()")
               .form-group
-                input(type="email", class="form-control", placeholder="Email", data-ng-model="login.username")
+                input(type="text", class="form-control", placeholder="Email", data-ng-model="login.username")
                 input(type="password", class="form-control", placeholder="Password", data-ng-model="login.password")
                 button.btn.btn-primary(type="submit") Submit
             a(href="#", data-ng-click="login.register()") Sign up
 
-      .register(data-ng-show="register.show").col-sm-6.col-sm-offset-3
+      .register(data-ng-show="register.show")
         .panel.panel-primary
           .panel-heading Register
-          .panel-body Register Form
+          .panel-body
+            form(data-ng-submit="register.submit()")
+              .form-group
+                input(type="email", class="form-control", placeholder="Email", data-ng-model="register.username")
+                input(type="password", class="form-control", placeholder="Password", data-ng-model="register.password")
+                div.
+                  Some sort of schedule picker here
+                button.btn.btn-primary(type="submit") Sign up
+            a(href="#", data-ng-click="register.back()") Back
 
       .profile(data-ng-show="profile.show").col-md-6.col-md-offset-3
         .panel.panel-primary
