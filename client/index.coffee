@@ -2,15 +2,9 @@
 
 app = angular.module 'app', ['ngCookies']
 
-SECRET = {
-  token: {
-    id: false
-    expires: false
-  }
-}
-
 class AppWindow
   constructor: (@app, @show) ->
+    if !@show? then @show = no
 
 class LoginWindow extends AppWindow
   constructor: (@app, @show) ->
@@ -47,7 +41,7 @@ class LoginWindow extends AppWindow
     @show = false
     @app.$scope.register.show = yes
   login: (data) ->
-    console.log 'login action', data
+    @app.$scope.loading.show = no
     @app.$scope.graph.init()
     @app.$scope.datatable.init()
     @app.$scope.profile.init()
@@ -79,34 +73,31 @@ class RegisterWindow extends AppWindow
 
 class ProfileWindow extends AppWindow
   init: ->
-    console.log 'ProfileWindow init'
     @show = yes
 
 class GraphWindow extends AppWindow
   init: ->
-    console.log 'GraphWindow init'
     @show = yes
 
 class DatatableWindow extends AppWindow
   init: ->
-    console.log 'DatatableWindow init'
     @show = yes
 
 class ManagerWindow extends AppWindow
 
 app.controller 'chowhound', class Chowhound
   constructor: (@$scope, @$http, @$cookies, @$cookieStore) ->
-    @$scope.loading = new AppWindow this, no
-    @$scope.login = new LoginWindow this, no
-    @$scope.register = new RegisterWindow this, no
-    @$scope.profile = new ProfileWindow this, no
-    @$scope.graph = new GraphWindow this, no
-    @$scope.datatable = new DatatableWindow this, no
-    @$scope.manager = new ManagerWindow this, no
-    console.log @$cookies.token, @$cookies.username
+    @$scope.loading = new AppWindow this, yes
+    @$scope.login = new LoginWindow this
+    @$scope.register = new RegisterWindow this
+    @$scope.profile = new ProfileWindow this
+    @$scope.graph = new GraphWindow this
+    @$scope.datatable = new DatatableWindow this
+    @$scope.manager = new ManagerWindow this
     if @$cookies.token and @$cookies.username
       @$scope.login.tokenLogin @$cookies.username, @$cookies.token
     else
+      @$scope.loading.show = no
       @$scope.login.show = yes
 
   loadData: ->
@@ -114,7 +105,6 @@ app.controller 'chowhound', class Chowhound
     if @$cookies.token
       @$http { url: '/api/data' }
         .success (data, status, headers, config) ->
-          console.log 'done loading', data
-          self.$scope.loading.show = true
+          self.$scope.loading.show = no
         .error (data, status, headers, config) ->
           console.log 'error', data
