@@ -73,7 +73,11 @@ class RegisterWindow extends AppWindow
 
 class ProfileWindow extends AppWindow
   init: ->
-    @show = yes
+    @show = no
+
+class BreakWindow extends AppWindow
+  init: ->
+    @show = no
 
 class GraphWindow extends AppWindow
   init: ->
@@ -94,6 +98,7 @@ app.controller 'chowhound', class Chowhound
     @$scope.graph = new GraphWindow this
     @$scope.datatable = new DatatableWindow this
     @$scope.manager = new ManagerWindow this
+    @$scope.break = new BreakWindow this
     if @$cookies.token and @$cookies.username
       @$scope.login.tokenLogin @$cookies.username, @$cookies.token
     else

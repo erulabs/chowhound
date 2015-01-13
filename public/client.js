@@ -1,6 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
-var AppWindow, Chowhound, DatatableWindow, GraphWindow, LoginWindow, ManagerWindow, ProfileWindow, RegisterWindow, app,
+var AppWindow, BreakWindow, Chowhound, DatatableWindow, GraphWindow, LoginWindow, ManagerWindow, ProfileWindow, RegisterWindow, app,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -132,10 +132,25 @@ ProfileWindow = (function(_super) {
   }
 
   ProfileWindow.prototype.init = function() {
-    return this.show = true;
+    return this.show = false;
   };
 
   return ProfileWindow;
+
+})(AppWindow);
+
+BreakWindow = (function(_super) {
+  __extends(BreakWindow, _super);
+
+  function BreakWindow() {
+    return BreakWindow.__super__.constructor.apply(this, arguments);
+  }
+
+  BreakWindow.prototype.init = function() {
+    return this.show = false;
+  };
+
+  return BreakWindow;
 
 })(AppWindow);
 
@@ -193,6 +208,7 @@ app.controller('chowhound', Chowhound = (function() {
     this.$scope.graph = new GraphWindow(this);
     this.$scope.datatable = new DatatableWindow(this);
     this.$scope.manager = new ManagerWindow(this);
+    this.$scope["break"] = new BreakWindow(this);
     if (this.$cookies.token && this.$cookies.username) {
       this.$scope.login.tokenLogin(this.$cookies.username, this.$cookies.token);
     } else {

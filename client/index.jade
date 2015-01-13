@@ -13,6 +13,12 @@ html(lang="en", data-ng-app="app")
       span und
 
     .app(data-ng-controller="chowhound")
+      .menu
+        a.item.btn.btn-default.btn-xs(data-ng-click="profile.show = !profile.show", data-ng-class="{ active: profile.show }") Profile
+        a.item.btn.btn-default.btn-xs(data-ng-click="manager.show = !manager.show", data-ng-class="{ active: manager.show }") Manager
+        .break
+          a.btn.btn-primary(data-ng-click="break.show = !break.show") Take off
+
       .loading(data-ng-show="loading.show")
         div &nbsp;
 
@@ -41,25 +47,26 @@ html(lang="en", data-ng-app="app")
                 button.btn.btn-primary(type="submit") Sign up
             a(href="#", data-ng-click="register.back()") Back
 
+      .break(data-ng-show="break.show").col-md-6.col-md-offset-3
+        .panel.panel-primary
+          .panel-heading Break
+          .panel-body Take break
+
       .profile(data-ng-show="profile.show").col-md-6.col-md-offset-3
         .panel.panel-primary
           .panel-heading Profile
-          .panel-body Login Form
-
-      .graph(data-ng-show="graph.show").col-md-6.col-md-offset-3
-        .panel.panel-primary
-          .panel-heading Graph
-          .panel-body Login Form
-
-      .datatable(data-ng-show="datatable.show").col-md-6.col-md-offset-3
-        .panel.panel-primary
-          .panel-heading Datatable
-          .panel-body Login Form
+          .panel-body User profile
 
       .manager(data-ng-show="manager.show").col-md-6.col-md-offset-3
         .panel.panel-primary
           .panel-heading Manager
-          .panel-body Login Form
+          .panel-body Manager form
+
+      .graph(data-ng-show="graph.show").col-md-6.col-md-offset-3
+        div Graph
+
+      .datatable(data-ng-show="datatable.show").col-md-6.col-md-offset-3
+        div Data table
 
     footer
       span Written and created by Seandon Mooy at Rackspace Hosting
