@@ -1,24 +1,6 @@
 'use strict'
 
-LISTEN = 9000
-if process.env.LISTEN? then LISTEN = process.env.LISTEN
-
-DBPATH = 'tmp/chow.db'
-if process.env.DBPATH? then DBPATH = process.env.DBPATH
-
-SESSIONLENGTH = 43200
-if process.env.SESSIONLENGTH? then SESSIONLENGTH = process.env.SESSIONLENGTH
-
-CRYPTOKEY = 'I am a random key, this should be changed'
-if process.env.CRYPTOKEY? then CRYPTOKEY = process.env.CRYPTOKEY
-
-SESSIONSECRET = 'I am different, but should also be changed'
-if process.env.SESSIONSECRET? then SESSIONSECRET = process.env.SESSIONSECRET
-
-# Obey X-Forwarded-Proto - set to true if behind a load balancer, for instance.
-REVERSEPROXY = no
-if process.env.REVERSEPROXY? then REVERSEPROXY = process.env.REVERSEPROXY
-
+CONFIG = require './../shared/config.js'
 express = require 'express'
 session = require 'express-session'
 levelup = require 'levelup'
@@ -29,7 +11,7 @@ randtoken = require 'rand-token'
 UID = randtoken.uid
 
 sha1 = (str, callback) ->
-  hmac = crypto.createHmac 'sha1', CRYPTOKEY
+  hmac = crypto.createHmac 'sha1', CONFIG.CRYPTOKEY
   hmac.setEncoding 'hex'
   hmac.end str, 'utf8', ->
     callback hmac.read()
@@ -38,16 +20,16 @@ module.exports = class Server
   constructor: ->
     @app = express()
     @app.use session {
-      secret: SESSIONSECRET
+      secret: CONFIG.SESSIONSECRET
       resave: no
       saveUninitialized: yes
-      proxy: REVERSEPROXY
+      proxy: CONFIG.REVERSEPROXY
     }
     @app.use(bodyParser.json())
     @app.use(bodyParser.urlencoded({ extended: true }))
     @app.use(multer())
 
-    @db = levelup DBPATH
+    @db = levelup CONFIG.DBPATH
 
     @app.post '/api/new/login', (req, res) => @newLoginRequest.apply this, [req, res]
     @app.post '/api/logout', (req, res) => @logoutRequest.apply this, [req, res]
@@ -57,7 +39,7 @@ module.exports = class Server
     @app.post '/api/manager/set', (req, res) => @managerPostRequest.apply this, [req, res]
     @app.post '/api/register', (req, res) => @registerRequest.apply this, [req, res]
 
-    @server = @app.listen process.env.LISTEN, =>
+    @server = @app.listen CONFIG.LISTEN, =>
       host = @server.address().address
       port = @server.address().port
       console.log 'Listening at http://%s:%s', host, port
@@ -82,6 +64,7 @@ module.exports = class Server
           callback false, value
 
   registerRequest: (req, res) ->
+    usernameDBkey = 'USERS_' + req.body.username
     if !req.body.username? or !req.body.password?
       res.send { error: 'Supply a username and password' }
     else
@@ -90,16 +73,17 @@ module.exports = class Server
           password: pass
           username: req.body.username
         }
-        this.dbget req.body.username, (e, user) =>
+        this.dbget usernameDBkey, (e, user) =>
           if user
             res.send { error: 'email already taken' }
           else
             this.loginAction(userObject, req, res)
 
   loginAction: (userObject, req, res) ->
+    usernameDBkey = 'USERS_' + req.body.username
     userObject.token = UID(32)
-    userObject.expires = (new Date().getTime()) + SESSIONLENGTH
-    this.db.put req.body.username, JSON.stringify(userObject)
+    userObject.expires = (new Date().getTime()) + CONFIG.SESSIONLENGTH
+    this.db.put usernameDBkey, JSON.stringify(userObject)
     req.session.userObject = userObject
     res.send {
       error: false
@@ -109,8 +93,9 @@ module.exports = class Server
     }
 
   newLoginRequest: (req, res) ->
+    usernameDBkey = 'USERS_' + req.body.username
     if req.body.token? and req.body.username?
-      this.dbget req.body.username, (e, userObject) =>
+      this.dbget usernameDBkey, (e, userObject) =>
         try userObject = JSON.parse(userObject)
         if userObject and userObject.token is req.body.token
           this.loginAction(userObject, req, res)
@@ -118,7 +103,7 @@ module.exports = class Server
           res.send { error: 'Login incorrect' }
     else if req.body.username? and req.body.password?
       sha1 req.body.password, (pass) =>
-        this.dbget req.body.username, (e, userObject) =>
+        this.dbget usernameDBkey, (e, userObject) =>
           try userObject = JSON.parse(userObject)
           if userObject and userObject.password is pass
             this.loginAction(userObject, req, res)
@@ -138,24 +123,31 @@ module.exports = class Server
         message: 'already logged in'
       }
     else
-      res.send {
-        message: 'Hello'
-      }
+      res.sendStatus 404
 
   newBreakRequest: (req, res) ->
-    res.send {
-      message: 'already logged in'
-    }
+    if req.session.userObject
+      res.send {
+        message: 'already logged in'
+      }
+    else
+      res.sendStatus 404
 
   managerGetRequest: (req, res) ->
-    res.send {
-      message: 'already logged in'
-    }
+    if req.session.userObject
+      res.send {
+        message: 'already logged in'
+      }
+    else
+      res.sendStatus 404
 
   managerPostRequest: (req, res) ->
-    res.send {
-      message: 'already logged in'
-    }
+    if req.session.userObject
+      res.send {
+        message: 'already logged in'
+      }
+    else
+      res.sendStatus 404
 
   # Stub for proper logger
   log: ->

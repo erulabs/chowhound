@@ -99,9 +99,24 @@ class BreakWindow extends AppWindow
 class GraphWindow extends AppWindow
   init: ->
     @show = yes
+    date = new Date()
+    thisHour = date.getHours()
+    ampm = 'am'
+    if thisHour > 11 then ampm = 'pm'
+    if thisHour > 12 then thisHour = thisHour - 12
+    if thisHour is 0 then thisHour = 12
+
+    hourList = []
+    for hour in [(thisHour - 1)..(thisHour + 7)]
+      if hour > 12
+        hour = hour - 12
+        hourList.push hour + 'am'
+      else
+        hourList.push hour + 'pm'
+
     angular.element(document).ready ->
       new Chartist.Line('.ct-chart', {
-        labels: [1, 2, 3, 4, 5, 6, 7, 8],
+        labels: hourList,
         series: [
           [5, 9, 7, 8, 5, 3, 5, 4]
         ]

@@ -184,10 +184,32 @@ GraphWindow = (function(_super) {
   }
 
   GraphWindow.prototype.init = function() {
+    var ampm, date, hour, hourList, thisHour, _i, _ref, _ref1;
     this.show = true;
+    date = new Date();
+    thisHour = date.getHours();
+    ampm = 'am';
+    if (thisHour > 11) {
+      ampm = 'pm';
+    }
+    if (thisHour > 12) {
+      thisHour = thisHour - 12;
+    }
+    if (thisHour === 0) {
+      thisHour = 12;
+    }
+    hourList = [];
+    for (hour = _i = _ref = thisHour - 1, _ref1 = thisHour + 7; _ref <= _ref1 ? _i <= _ref1 : _i >= _ref1; hour = _ref <= _ref1 ? ++_i : --_i) {
+      if (hour > 12) {
+        hour = hour - 12;
+        hourList.push(hour + 'am');
+      } else {
+        hourList.push(hour + 'pm');
+      }
+    }
     return angular.element(document).ready(function() {
       return new Chartist.Line('.ct-chart', {
-        labels: [1, 2, 3, 4, 5, 6, 7, 8],
+        labels: hourList,
         series: [[5, 9, 7, 8, 5, 3, 5, 4]]
       }, {
         low: 0,

@@ -64,14 +64,14 @@ html(lang="en", data-ng-app="app")
 
       .graph(data-ng-show="graph.show").col-md-6.col-md-offset-3
         .panel.panel-primary
-          .panel-body.ct-chart Graph
+          .panel-body.ct-chart
 
       .datatable(data-ng-show="datatable.show").col-md-6.col-md-offset-3
         div Data table
 
 
       footer.col-md-12
-        a.item(data-ng-click="profile.logout()", data-ng-class="{ active: !login.show }") Logout
+        a.item(data-ng-click="profile.logout()", data-ng-show="!login.show") Logout
         div
           span created with&nbsp;
           span.glyphicon.glyphicon-heart
