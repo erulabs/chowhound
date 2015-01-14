@@ -13,11 +13,11 @@ html(lang="en", data-ng-app="app")
       span und
 
     .app(data-ng-controller="chowhound")
-      .menu
+      .menu(data-ng-show="!login.show")
         a.item.btn.btn-default.btn-xs(data-ng-click="profile.show = !profile.show", data-ng-class="{ active: profile.show }") Profile
         a.item.btn.btn-default.btn-xs(data-ng-click="manager.show = !manager.show", data-ng-class="{ active: manager.show }") Manager
         .break
-          a.btn.btn-primary(data-ng-click="break.show = !break.show") Take off
+          a.btn.btn-primary(data-ng-click="break.show = !break.show", data-ng-class="{ active: break.show }") Take off
 
       .loading(data-ng-show="loading.show")
         div &nbsp;
@@ -63,13 +63,19 @@ html(lang="en", data-ng-app="app")
           .panel-body Manager form
 
       .graph(data-ng-show="graph.show").col-md-6.col-md-offset-3
-        div Graph
+        .panel.panel-primary
+          .panel-body.ct-chart Graph
 
       .datatable(data-ng-show="datatable.show").col-md-6.col-md-offset-3
         div Data table
 
-    footer
-      span Written and created by Seandon Mooy at Rackspace Hosting
+
+      footer.col-md-12
+        a.item(data-ng-click="profile.logout()", data-ng-class="{ active: !login.show }") Logout
+        div
+          span created with&nbsp;
+          span.glyphicon.glyphicon-heart
+          span &nbsp;by Seandon Mooy
 
     script(type='text/javascript', src=assetURL + 'vendor.js')
     script(type='text/javascript', src=assetURL + 'client.js')

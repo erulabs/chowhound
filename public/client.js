@@ -135,6 +135,28 @@ ProfileWindow = (function(_super) {
     return this.show = false;
   };
 
+  ProfileWindow.prototype.logout = function() {
+    return this.app.$http.post('/api/logout', {
+      logout: true
+    }).success((function(_this) {
+      return function(data, status, headers, config) {
+        if (data.error) {
+          return alert(data.error);
+        } else {
+          _this.app.$cookieStore.remove('token');
+          _this.app.$cookieStore.remove('username');
+          _this.app.$scope.login.show = true;
+          _this.app.$scope.graph.show = false;
+          _this.app.$scope.datatable.show = false;
+          _this.app.$scope.profile.show = false;
+          return _this.app.$scope.manager.show = false;
+        }
+      };
+    })(this)).error(function(data, status, headers, config) {
+      return console.log('error', data);
+    });
+  };
+
   return ProfileWindow;
 
 })(AppWindow);
@@ -162,7 +184,16 @@ GraphWindow = (function(_super) {
   }
 
   GraphWindow.prototype.init = function() {
-    return this.show = true;
+    this.show = true;
+    return angular.element(document).ready(function() {
+      return new Chartist.Line('.ct-chart', {
+        labels: [1, 2, 3, 4, 5, 6, 7, 8],
+        series: [[5, 9, 7, 8, 5, 3, 5, 4]]
+      }, {
+        low: 0,
+        showArea: true
+      });
+    });
   };
 
   return GraphWindow;

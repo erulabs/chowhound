@@ -74,6 +74,23 @@ class RegisterWindow extends AppWindow
 class ProfileWindow extends AppWindow
   init: ->
     @show = no
+  logout: ->
+    @app.$http.post('/api/logout', {
+      logout: true
+    })
+      .success (data, status, headers, config) =>
+        if data.error
+          alert data.error
+        else
+          @app.$cookieStore.remove 'token'
+          @app.$cookieStore.remove 'username'
+          @app.$scope.login.show = yes
+          @app.$scope.graph.show = no
+          @app.$scope.datatable.show = no
+          @app.$scope.profile.show = no
+          @app.$scope.manager.show = no
+      .error (data, status, headers, config) ->
+        console.log 'error', data
 
 class BreakWindow extends AppWindow
   init: ->
@@ -82,6 +99,16 @@ class BreakWindow extends AppWindow
 class GraphWindow extends AppWindow
   init: ->
     @show = yes
+    angular.element(document).ready ->
+      new Chartist.Line('.ct-chart', {
+        labels: [1, 2, 3, 4, 5, 6, 7, 8],
+        series: [
+          [5, 9, 7, 8, 5, 3, 5, 4]
+        ]
+      }, {
+        low: 0,
+        showArea: true
+      })
 
 class DatatableWindow extends AppWindow
   init: ->
@@ -113,3 +140,4 @@ app.controller 'chowhound', class Chowhound
           self.$scope.loading.show = no
         .error (data, status, headers, config) ->
           console.log 'error', data
+

@@ -50,6 +50,7 @@ module.exports = class Server
     @db = levelup DBPATH
 
     @app.post '/api/new/login', (req, res) => @newLoginRequest.apply this, [req, res]
+    @app.post '/api/logout', (req, res) => @logoutRequest.apply this, [req, res]
     @app.get '/api/data', (req, res) => @dataRequest.apply this, [req, res]
     @app.post '/api/new/break', (req, res) => @newBreakRequest.apply this, [req, res]
     @app.get '/api/manager', (req, res) => @managerGetRequest.apply this, [req, res]
@@ -126,8 +127,13 @@ module.exports = class Server
     else
       res.send { error: 'Supply a username and password' }
 
+  logoutRequest: (req, res) ->
+    if req.session.userObject
+      req.session.userObject = undefined
+      res.send { message: 'Logged out!' }
+
   dataRequest: (req, res) ->
-    if req.session.apikey
+    if req.session.userObject
       res.send {
         message: 'already logged in'
       }
