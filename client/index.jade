@@ -52,16 +52,25 @@ html(lang="en")
           .panel-heading Break
           .panel-body Take break
 
-      .profile(data-ng-show="profile.show").col-md-6.col-md-offset-3
-        .panel.panel-primary
+      .profile(data-ng-show="profile.show || !stats.team").col-md-6.col-md-offset-3
+        .warn.text-center(data-ng-show="!stats.team")
+          div
+            span You are not currently assigned to a team!
+            br
+            span Ask for an invite from anyone on the team, or
+          div
+            button.btn.btn-primary.padded(data-ng-show="!showJoinTeam", data-ng-click="showJoinTeam = !showJoinTeam") Create a new team!
+            div(data-ng-show="showJoinTeam")
+              form(data-ng-submit=)
+                .input-group.padded
+                  input(type="text", class="form-control", placeholder="Team name")
+                  span.input-group-btn
+                    button.btn.btn-default(type="button") Create!
+        .panel.panel-primary(data-ng-show="stats.team")
           .panel-heading Profile
           .panel-body
-            div Current team: {{ profile.team }}
 
       .stats(data-ng-show="stats.show").col-md-6.col-md-offset-3
-        .warn(data-ng-show="!stats.team")
-          div You are not currently assigned to a team!
-          div Click here to join!
         div(data-ng-show="stats.team") Current team: {{ stats.team }}
 
       .manager(data-ng-show="manager.show").col-md-6.col-md-offset-3
