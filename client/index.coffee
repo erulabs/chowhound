@@ -11,7 +11,7 @@ class LoginWindow extends AppWindow
     @username = ''
     @password = ''
   submit: ->
-    @app.$http.post('/api/new/login', {
+    @app.$http.post('/api/login', {
       username: @username
       password: @password
     })
@@ -25,7 +25,7 @@ class LoginWindow extends AppWindow
       .error (data, status, headers, config) ->
         console.log 'error', data
   tokenLogin: (username, token) ->
-    @app.$http.post '/api/new/login', { username: username, token: token }
+    @app.$http.post '/api/login', { username: username, token: token }
       .success (data, status, headers, config) =>
         if data.error
           alert data.error
@@ -45,6 +45,7 @@ class LoginWindow extends AppWindow
     @app.$scope.graph.init()
     @app.$scope.datatable.init()
     @app.$scope.profile.init()
+    @app.$scope.stats.show = yes
     @app.$cookies.token = data.token
     @app.$cookies.username = data.username
 
@@ -89,10 +90,15 @@ class ProfileWindow extends AppWindow
           @app.$scope.datatable.show = no
           @app.$scope.profile.show = no
           @app.$scope.manager.show = no
+          @app.$scope.stats.show = no
       .error (data, status, headers, config) ->
         console.log 'error', data
 
 class BreakWindow extends AppWindow
+  init: ->
+    @show = no
+
+class StatsWindow extends AppWindow
   init: ->
     @show = no
 
@@ -118,7 +124,7 @@ class GraphWindow extends AppWindow
       new Chartist.Line('.ct-chart', {
         labels: hourList,
         series: [
-          [5, 9, 7, 8, 5, 3, 5, 4]
+          [5, 9, 7, 8, 5, 3, 5, 8]
         ]
       }, {
         low: 0,
@@ -138,21 +144,21 @@ app.controller 'chowhound', class Chowhound
     @$scope.register = new RegisterWindow this
     @$scope.profile = new ProfileWindow this
     @$scope.graph = new GraphWindow this
+    @$scope.stats = new StatsWindow this
     @$scope.datatable = new DatatableWindow this
     @$scope.manager = new ManagerWindow this
     @$scope.break = new BreakWindow this
-    if @$cookies.token and @$cookies.username
-      @$scope.login.tokenLogin @$cookies.username, @$cookies.token
-    else
-      @$scope.loading.show = no
-      @$scope.login.show = yes
-
-  loadData: ->
-    self = this
-    if @$cookies.token
-      @$http { url: '/api/data' }
-        .success (data, status, headers, config) ->
-          self.$scope.loading.show = no
-        .error (data, status, headers, config) ->
-          console.log 'error', data
-
+    @$http({
+      method: 'GET'
+      url: '/api/data'
+      headers: {
+        'x-chow-user': @$cookies.username
+        'x-chow-token': @$cookies.token
+      }
+    })
+      .success (data, status, headers) =>
+        @$scope.login.login(data)
+      .error (data, status, headers) =>
+        if status is 404
+          @$scope.loading.show = no
+          @$scope.login.show = yes

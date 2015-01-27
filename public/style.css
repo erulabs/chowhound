@@ -3840,9 +3840,9 @@ header {
   text-align: center;
   margin-top: 25px;
   margin-bottom: 5px;
-  font-size: 3em;
+  font-size: 4em;
   font-family: 'Arbutus Slab', serif;
-  color: #ddd;
+  color: #777;
 }
 header .glyphicon-time {
   font-size: 0.55em;
@@ -3865,6 +3865,9 @@ header .glyphicon-time {
 .menu .break .active {
   border-color: black;
   background-color: #22527b !important;
+}
+.stats {
+  text-align: center;
 }
 .login,
 .register {
@@ -3923,7 +3926,8 @@ footer {
 }
 footer .glyphicon {
   font-size: 0.9em;
-  color: #8B0000;
+  color: red;
+  opacity: 0.3;
 }
 .loading {
   text-align: center;
@@ -3934,6 +3938,9 @@ footer .glyphicon {
 }
 .text-center {
   text-align: center;
+}
+.warn {
+  font-size: 1.2em;
 }
 /* Chartist.js 0.5.0
  * Copyright © 2014 Gion Kunz

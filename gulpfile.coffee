@@ -192,6 +192,19 @@ gulp.task 'server', ->
   .on 'restart', ->
     seq 'lint', 'spec', 'todos'
 
+# gulp.task 'browserify', ->
+#   for entry in tasks.browserify
+#     stream = browser({
+#       entries: [entry.path]
+#       extensions: ['.coffee']
+#     }).transform 'coffeeify'
+#       .bundle()
+#       .pipe source 'client.js'
+#     if MINIFY then stream.pipe streamify uglify()
+#     stream.pipe gulp.dest 'public'
+#       .on 'error', gutil.log
+#     if WATCHING then stream.pipe connect.reload()
+
 gulp.task 'browserify', ->
   for entry in tasks.browserify
     stream = browser({
@@ -200,10 +213,10 @@ gulp.task 'browserify', ->
     }).transform 'coffeeify'
       .bundle()
       .pipe source 'client.js'
-    if MINIFY then stream.pipe streamify uglify()
-    stream.pipe gulp.dest 'public'
+      #.pipe streamify uglify()
+      .pipe gulp.dest 'public'
+      .pipe connect.reload(5000)
       .on 'error', gutil.log
-    if WATCHING then stream.pipe connect.reload()
 
 gulp.task 'lint', ->
   gatherTasks 'lint', (details) ->

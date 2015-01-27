@@ -1,6 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
-var AppWindow, BreakWindow, Chowhound, DatatableWindow, GraphWindow, LoginWindow, ManagerWindow, ProfileWindow, RegisterWindow, app,
+var AppWindow, BreakWindow, Chowhound, DatatableWindow, GraphWindow, LoginWindow, ManagerWindow, ProfileWindow, RegisterWindow, StatsWindow, app,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -30,7 +30,7 @@ LoginWindow = (function(_super) {
   }
 
   LoginWindow.prototype.submit = function() {
-    return this.app.$http.post('/api/new/login', {
+    return this.app.$http.post('/api/login', {
       username: this.username,
       password: this.password
     }).success((function(_this) {
@@ -48,7 +48,7 @@ LoginWindow = (function(_super) {
   };
 
   LoginWindow.prototype.tokenLogin = function(username, token) {
-    return this.app.$http.post('/api/new/login', {
+    return this.app.$http.post('/api/login', {
       username: username,
       token: token
     }).success((function(_this) {
@@ -77,6 +77,7 @@ LoginWindow = (function(_super) {
     this.app.$scope.graph.init();
     this.app.$scope.datatable.init();
     this.app.$scope.profile.init();
+    this.app.$scope.stats.show = true;
     this.app.$cookies.token = data.token;
     return this.app.$cookies.username = data.username;
   };
@@ -149,7 +150,8 @@ ProfileWindow = (function(_super) {
           _this.app.$scope.graph.show = false;
           _this.app.$scope.datatable.show = false;
           _this.app.$scope.profile.show = false;
-          return _this.app.$scope.manager.show = false;
+          _this.app.$scope.manager.show = false;
+          return _this.app.$scope.stats.show = false;
         }
       };
     })(this)).error(function(data, status, headers, config) {
@@ -173,6 +175,21 @@ BreakWindow = (function(_super) {
   };
 
   return BreakWindow;
+
+})(AppWindow);
+
+StatsWindow = (function(_super) {
+  __extends(StatsWindow, _super);
+
+  function StatsWindow() {
+    return StatsWindow.__super__.constructor.apply(this, arguments);
+  }
+
+  StatsWindow.prototype.init = function() {
+    return this.show = false;
+  };
+
+  return StatsWindow;
 
 })(AppWindow);
 
@@ -210,7 +227,7 @@ GraphWindow = (function(_super) {
     return angular.element(document).ready(function() {
       return new Chartist.Line('.ct-chart', {
         labels: hourList,
-        series: [[5, 9, 7, 8, 5, 3, 5, 4]]
+        series: [[5, 9, 7, 8, 5, 3, 5, 8]]
       }, {
         low: 0,
         showArea: true
@@ -259,30 +276,30 @@ app.controller('chowhound', Chowhound = (function() {
     this.$scope.register = new RegisterWindow(this);
     this.$scope.profile = new ProfileWindow(this);
     this.$scope.graph = new GraphWindow(this);
+    this.$scope.stats = new StatsWindow(this);
     this.$scope.datatable = new DatatableWindow(this);
     this.$scope.manager = new ManagerWindow(this);
     this.$scope["break"] = new BreakWindow(this);
-    if (this.$cookies.token && this.$cookies.username) {
-      this.$scope.login.tokenLogin(this.$cookies.username, this.$cookies.token);
-    } else {
-      this.$scope.loading.show = false;
-      this.$scope.login.show = true;
-    }
+    this.$http({
+      method: 'GET',
+      url: '/api/data',
+      headers: {
+        'x-chow-user': this.$cookies.username,
+        'x-chow-token': this.$cookies.token
+      }
+    }).success((function(_this) {
+      return function(data, status, headers) {
+        return _this.$scope.login.login(data);
+      };
+    })(this)).error((function(_this) {
+      return function(data, status, headers) {
+        if (status === 404) {
+          _this.$scope.loading.show = false;
+          return _this.$scope.login.show = true;
+        }
+      };
+    })(this));
   }
-
-  Chowhound.prototype.loadData = function() {
-    var self;
-    self = this;
-    if (this.$cookies.token) {
-      return this.$http({
-        url: '/api/data'
-      }).success(function(data, status, headers, config) {
-        return self.$scope.loading.show = false;
-      }).error(function(data, status, headers, config) {
-        return console.log('error', data);
-      });
-    }
-  };
 
   return Chowhound;
 

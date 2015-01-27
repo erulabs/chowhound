@@ -31,7 +31,7 @@ module.exports = class Server
 
     @db = levelup CONFIG.DBPATH
 
-    @app.post '/api/new/login', (req, res) => @newLoginRequest.apply this, [req, res]
+    @app.post '/api/login', (req, res) => @newLoginRequest.apply this, [req, res]
     @app.post '/api/logout', (req, res) => @logoutRequest.apply this, [req, res]
     @app.get '/api/data', (req, res) => @dataRequest.apply this, [req, res]
     @app.post '/api/new/break', (req, res) => @newBreakRequest.apply this, [req, res]
@@ -85,12 +85,8 @@ module.exports = class Server
     userObject.expires = (new Date().getTime()) + CONFIG.SESSIONLENGTH
     this.db.put usernameDBkey, JSON.stringify(userObject)
     req.session.userObject = userObject
-    res.send {
-      error: false
-      token: userObject.token
-      expires: userObject.expires
-      username: req.body.username
-    }
+    @log req.body.username + ' logged in'
+    res.redirect '/'
 
   newLoginRequest: (req, res) ->
     usernameDBkey = 'USERS_' + req.body.username
@@ -120,8 +116,25 @@ module.exports = class Server
   dataRequest: (req, res) ->
     if req.session.userObject
       res.send {
-        message: 'already logged in'
+        username: req.session.userObject.username
+        token: req.session.userObject.token
+        expires: req.session.userObject.expires
       }
+    else if req.headers['x-chow-token']? and req.headers['x-chow-user']?
+      usernameDBkey = 'USERS_' + req.headers['x-chow-user']
+      this.dbget usernameDBkey, (e, userObject) =>
+        try userObject = JSON.parse(userObject)
+        if userObject and userObject.token is req.headers['x-chow-token']
+          userObject.expires = (new Date().getTime()) + CONFIG.SESSIONLENGTH
+          this.db.put usernameDBkey, JSON.stringify(userObject)
+          req.session.userObject = userObject
+          res.send {
+            username: req.session.userObject.username
+            token: req.session.userObject.token
+            expires: req.session.userObject.expires
+          }
+        else
+          res.sendStatus 404
     else
       res.sendStatus 404
 

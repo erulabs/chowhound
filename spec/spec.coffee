@@ -15,7 +15,7 @@ describe 'API security', ->
 
   it 'should reject nonsense logins', (done) ->
     setTimeout ->
-      request.post HOST + '/api/new/login', { username: 'asgfd24352', password: 'fake' }, (error, resp, body) ->
+      request.post HOST + '/api/login', { username: 'asgfd24352', password: 'fake' }, (error, resp, body) ->
         reply = JSON.parse(resp.body)
         expect(reply.error).to.equal('Supply a username and password')
         done()
