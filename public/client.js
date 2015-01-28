@@ -266,11 +266,12 @@ ManagerWindow = (function(_super) {
 })(AppWindow);
 
 app.controller('chowhound', Chowhound = (function() {
-  function Chowhound($scope, $http, $cookies, $cookieStore) {
+  function Chowhound($scope, $http, $cookies, $cookieStore, $location) {
     this.$scope = $scope;
     this.$http = $http;
     this.$cookies = $cookies;
     this.$cookieStore = $cookieStore;
+    this.$location = $location;
     this.$scope.loading = new AppWindow(this, true);
     this.$scope.login = new LoginWindow(this);
     this.$scope.register = new RegisterWindow(this);

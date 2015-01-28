@@ -13,10 +13,9 @@ describe 'API security', ->
         done()
     , 1000
 
-  it 'should reject nonsense logins', (done) ->
+  it 'should redirect back to the index on a login submission', (done) ->
     setTimeout ->
       request.post HOST + '/api/login', { username: 'asgfd24352', password: 'fake' }, (error, resp, body) ->
-        reply = JSON.parse(resp.body)
-        expect(reply.error).to.equal('Supply a username and password')
+        expect(resp.body).to.equal('Moved Temporarily. Redirecting to /')
         done()
     , 1000

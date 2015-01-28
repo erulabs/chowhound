@@ -4,7 +4,8 @@
 NODE_ENV = 'dev'
 MINIFY = no # Uglify (minify) all scripts
 TODOS = yes # print TODOs found in code
-afterEveryRun = [ 'spec' ] # tasks to run after EVERY set of tasks
+# afterEveryRun = [ 'spec' ] # tasks to run after EVERY set of tasks
+afterEveryRun = []
 ASSETURL = '/' # base URL to be passed to Jade and Less
 DEVPORT = 8080 # The port gulp-connect will listen on
 BACKENDPORT = 9000 # The port for the node server to run on

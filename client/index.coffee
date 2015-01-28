@@ -138,7 +138,7 @@ class DatatableWindow extends AppWindow
 class ManagerWindow extends AppWindow
 
 app.controller 'chowhound', class Chowhound
-  constructor: (@$scope, @$http, @$cookies, @$cookieStore) ->
+  constructor: (@$scope, @$http, @$cookies, @$cookieStore, @$location) ->
     @$scope.loading = new AppWindow this, yes
     @$scope.login = new LoginWindow this
     @$scope.register = new RegisterWindow this
