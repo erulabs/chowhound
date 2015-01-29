@@ -1,14 +1,15 @@
 'use strict'
 
 CONFIG          = require './../shared/config.js'
+ENV             = CONFIG.ENV
 lib             = {}
 lib.express     = require 'express'
 lib.session     = require 'express-session'
-lib.levelup     = require 'levelup'
 lib.crypto      = require 'crypto'
 lib.bodyParser  = require 'body-parser'
 lib.multer      = require 'multer'
 lib.randtoken   = require 'rand-token'
+lib.levelup     = require 'levelup'
 UID             = lib.randtoken.uid
 DB              = {}
 
@@ -20,8 +21,7 @@ LOG = ->
 SHA1 = (str, callback) ->
   hmac = lib.crypto.createHmac 'sha1', CONFIG.CRYPTOKEY
   hmac.setEncoding 'hex'
-  hmac.end str, 'utf8', ->
-    callback hmac.read()
+  hmac.end str, 'utf8', -> callback hmac.read()
 
 class Model
   keyName: (key) ->
@@ -59,8 +59,7 @@ class Model
         for properyName, propery of value
           self[properyName] = propery if self.savable[properyName]
         callback value if callback?
-  presave: (callback) ->
-    callback()
+  presave: (callback) -> callback()
 
 class Team extends Model
   constructor: ->
@@ -159,7 +158,6 @@ module.exports = class Server
     res.send 'Logged in!'
 
   logoutRequest: (req, res) ->
-    # delete session
     req.session.destroy()
     res.send 'ok'
 
@@ -198,11 +196,11 @@ module.exports = class Server
               session = user.newSessionToken()
               req.session.token = session.token
               req.session.expires = session.expires
-              age = (session.expires - (new Date().getTime())) / 1000
               username = req.body.username
               template = '<html><body><script>'
-              template += 'document.cookie="x-chow-token=' + session.token + '; max-age=' + age + '; path=/";'
-              template += 'document.cookie="x-chow-token-expires=' + session.expires + '; max-age=' + age + '; path=/";'
+              template += 'document.cookie="x-chow-token=' + session.token + '; max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
+              template += 'document.cookie="x-chow-token-expires=' + session.expires + '; '
+              template += 'max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
               template += 'document.location.href = "/";'
               template += '</script></body><html>'
               res.set 'Content-Type', 'text/html'
@@ -218,4 +216,3 @@ module.exports = class Server
     else
       req.session.destroy()
       res.redirect '/'
-

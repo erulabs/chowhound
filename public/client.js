@@ -98,13 +98,7 @@ ProfileWindow = (function(_super) {
   };
 
   ProfileWindow.prototype.logout = function() {
-    return this.app.$http({
-      method: 'POST',
-      url: '/api/logout',
-      headers: {
-        'x-chow-token': this.app.$cookies['x-chow-token'].replace(/"/g, '')
-      }
-    }).success((function(_this) {
+    return this.app.post('/logout').success((function(_this) {
       return function(data, status, headers, config) {
         if (data.error) {
           return alert(data.error);
@@ -258,13 +252,7 @@ app.controller('chowhound', Chowhound = (function() {
       this.$cookieStore.remove('x-chow-token-expires');
     }
     if (token != null) {
-      this.$http({
-        method: 'GET',
-        url: '/api/data',
-        headers: {
-          'x-chow-token': this.$cookies['x-chow-token'].replace(/"/g, '')
-        }
-      }).success((function(_this) {
+      this.get('/data').success((function(_this) {
         return function(data, status, headers) {
           return _this.$scope.login.login(data);
         };
@@ -281,6 +269,32 @@ app.controller('chowhound', Chowhound = (function() {
       this.$scope.login.show = true;
     }
   }
+
+  Chowhound.prototype.http = function(options) {
+    if (options.headers == null) {
+      options.headers = {};
+    }
+    options.headers['x-chow-token'] = this.$cookies['x-chow-token'].replace(/"/g, '');
+    return this.$http(options);
+  };
+
+  Chowhound.prototype.get = function(uri) {
+    return this.http({
+      method: 'GET',
+      url: '/api' + uri
+    });
+  };
+
+  Chowhound.prototype.post = function(uri, data) {
+    if (data == null) {
+      data = {};
+    }
+    return this.http({
+      method: 'POST',
+      url: '/api' + uri,
+      data: data
+    });
+  };
 
   return Chowhound;
 

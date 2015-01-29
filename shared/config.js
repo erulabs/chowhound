@@ -2,6 +2,11 @@
 
 var set = {};
 
+set.ENV = 'dev';
+if (process.env.ENV !== undefined) {
+  set.ENV = process.env.ENV;
+}
+
 set.LISTEN = 9000;
 if (process.env.LISTEN !== undefined) {
   set.LISTEN = process.env.LISTEN;

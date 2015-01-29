@@ -48,11 +48,7 @@ class ProfileWindow extends AppWindow
   init: ->
     @show = no
   logout: ->
-    @app.$http({
-      method: 'POST'
-      url: '/api/logout'
-      headers: { 'x-chow-token': @app.$cookies['x-chow-token'].replace /"/g, '' }
-    })
+    @app.post '/logout'
       .success (data, status, headers, config) =>
         if data.error
           alert data.error
@@ -131,11 +127,7 @@ app.controller 'chowhound', class Chowhound
       @$cookieStore.remove 'x-chow-token'
       @$cookieStore.remove 'x-chow-token-expires'
     if token?
-      @$http({
-        method: 'GET'
-        url: '/api/data'
-        headers: { 'x-chow-token': @$cookies['x-chow-token'].replace /"/g, '' }
-      })
+      @get '/data'
         .success (data, status, headers) =>
           @$scope.login.login(data)
         .error (data, status, headers) =>
@@ -145,3 +137,19 @@ app.controller 'chowhound', class Chowhound
             @$scope.login.show = yes
     else
       @$scope.login.show = yes
+  http: (options) ->
+    options.headers = {} unless options.headers?
+    options.headers['x-chow-token'] = @$cookies['x-chow-token'].replace /"/g, ''
+    return @$http options
+  get: (uri) ->
+    return @http {
+      method: 'GET'
+      url: '/api' + uri
+    }
+  post: (uri, data) ->
+    data = {} unless data?
+    return @http {
+      method: 'POST'
+      url: '/api' + uri
+      data: data
+    }

@@ -4356,12 +4356,11 @@ header .glyphicon-time {
 }
 .login .panel .panel-body input,
 .register .panel .panel-body input {
-  margin-bottom: 2px;
+  margin-bottom: 12px;
 }
 .login .panel .panel-body button,
 .register .panel .panel-body button {
-  margin-top: 1px;
-  margin-right: 10px;
+  margin-top: 0px;
   margin-bottom: 0px;
 }
 .login .panel .panel-body .form-group,
@@ -4369,16 +4368,16 @@ header .glyphicon-time {
   margin-bottom: 4px;
 }
 .panel-primary {
-  border-color: #000;
+  border: none;
 }
 .panel-heading {
   padding: 3px 10px;
-  background-color: #555 !important;
-  border-color: #555 !important;
+  background-color: transparent !important;
+  border: none;
   font-size: 0.8em;
 }
 .panel-body {
-  background-color: #ccc;
+  background-color: transparent;
   padding: 5px;
   padding-top: 10px;
   padding-bottom: 10px;
@@ -4390,21 +4389,13 @@ header .glyphicon-time {
 footer {
   text-align: center;
   width: 100%;
-  margin-top: 20px;
+  margin-top: 8em;
   font-size: 0.8em;
   color: #666;
 }
 footer .glyphicon {
-  font-size: 0.9em;
-  color: red;
-  opacity: 0.3;
-}
-.loading {
-  text-align: center;
-  width: 100%;
-}
-.loading .glyphicon-time {
-  font-size: 30em;
+  font-size: 1.9em;
+  color: #733434;
 }
 .text-center {
   text-align: center;
@@ -4415,6 +4406,9 @@ footer .glyphicon {
 .padded {
   margin-bottom: 0.5em;
   margin-top: 0.5em;
+}
+.less {
+  color: #666;
 }
 /* Chartist.js 0.5.0
  * Copyright © 2014 Gion Kunz

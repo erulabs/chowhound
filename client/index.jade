@@ -1,7 +1,7 @@
 doctype html
 html(lang="en")
   head
-    title Chowhound
+    title ChowHound
     meta(charset="UTF-8")
     link(rel="stylesheet", href=assetURL + 'style.css')
   body(ng-app="app")
@@ -14,10 +14,10 @@ html(lang="en")
 
     .app(data-ng-controller="chowhound")
       .menu(data-ng-show="!login.show && stats.team")
-        a.item.btn.btn-default.btn-xs(data-ng-click="profile.show = !profile.show", data-ng-class="{ active: profile.show }") Profile
-        a.item.btn.btn-default.btn-xs(data-ng-click="manager.show = !manager.show", data-ng-class="{ active: manager.show }") Manager
+        button.item.btn.btn-default.btn-xs(data-ng-click="profile.show = !profile.show", data-ng-class="{ active: profile.show }") Profile
+        button.item.btn.btn-default.btn-xs(data-ng-click="manager.show = !manager.show", data-ng-class="{ active: manager.show }") Manager
         .break
-          a.btn.btn-primary(data-ng-click="break.show = !break.show", data-ng-class="{ active: break.show }") Take off
+          button.btn.btn-primary(data-ng-click="break.show = !break.show", data-ng-class="{ active: break.show }") Take off
 
       .login(data-ng-show="login.show")
         .panel.panel-primary
@@ -84,11 +84,14 @@ html(lang="en")
 
 
       footer.col-md-12
-        a.item(data-ng-click="profile.logout()", data-ng-show="!login.show") Logout
         div
-          span created with&nbsp;
-          span.glyphicon.glyphicon-heart
-          span &nbsp;by Seandon Mooy
+          span.glyphicon.glyphicon-fire
+        a.less.item(data-ng-click="profile.logout()", data-ng-show="!login.show && !register.show", href="#") Logout
+        div
+          span &nbsp;by&nbsp;
+          a.less(href="http://seandonmooy.com", target="_blank") Seandon Mooy
+          span &nbsp;-&nbsp;
+          a.less(href="http://github.com/erulabs/chowhound", target="_blank") check the github
 
     script(type='text/javascript', src=assetURL + 'vendor.js')
     script(type='text/javascript', src=assetURL + 'client.js')
