@@ -24,38 +24,45 @@ SHA1 = (str, callback) ->
     callback hmac.read()
 
 class Model
-  keyName: ->
-    return this.constructor.name + '_' + @key
+  keyName: (key) ->
+    if key
+      return this.constructor.name + '_' + key
+    else
+      return this.constructor.name + '_' + this[@key]
   save: (callback) ->
     return unless this.savable?
     saveData = {}
+    self = this
     this.presave ->
-      for properyName, propery of this
-        continue if properyName is 'savable'
-        saveData[properyName] = propery if this.savable[properyName]
-      DB.put @keyName(), saveData, (error) =>
+      for item, _p of self.savable
+        saveData[item] = self[item] if self[item]?
+      LOG 'DB saving', self.keyName(), JSON.stringify(saveData)
+      DB.put self.keyName(), JSON.stringify(saveData), (error) ->
         if error
-          LOG 'DBERROR:', 'saving model', @keyName(), 'Error:', error
+          LOG 'DBERROR:', 'saving model', self.keyName(), 'Error:', error
           return callback error if callback?
         else
-          callback false, value if callback?
+          callback false if callback?
   load: (key, callback) ->
-    DB.get @keyName(), (error, value) =>
+    self = this
+    DB.get self.keyName(key), (error, raw) ->
       if error
         if error.type is 'NotFoundError'
           return callback false if callback?
         else
-          @log 'DBERROR:', 'getting model', @keyName(), 'Error:', error
+          LOG 'DBERROR:', 'getting model', self.keyName(), 'Error:', error
           return callback false if callback?
       else
+        try value = JSON.parse raw
         for properyName, propery of value
-          this[properyName] = propery if this.savable[properyName]
-        callback true, value if callback?
+          self[properyName] = propery if self.savable[properyName]
+        callback value if callback?
   presave: (callback) ->
     callback()
 
 class Team extends Model
   constructor: ->
+    @key = 'name'
     @savable = {
       members: true
       name: true
@@ -64,6 +71,7 @@ class Team extends Model
 
 class User extends Model
   constructor: ->
+    @key = 'username'
     @savable = {
       password: true
       username: true
@@ -74,22 +82,21 @@ class User extends Model
     SHA1 self.password, (password) ->
       self.password = password
       callback()
+  newSessionToken: ->
+    session = new Session()
+    session.token = UID 32
+    session.expires = (new Date().getTime()) + CONFIG.SESSIONLENGTH
+    session.save()
+    return session
 
 class Session extends Model
   constructor: ->
+    @key = 'token'
     @savable = {
       username: true
       expires: true
       token: true
     }
-
-newSessionToken = (req) ->
-  session = new Session()
-  session.token = UID 32
-  session.expires = (new Date().getTime()) + CONFIG.SESSIONLENGTH
-  req.session.token = session.token
-  req.session.expires = session.expires
-  session.save()
 
 module.exports = class Server
   constructor: ->
@@ -99,9 +106,9 @@ module.exports = class Server
     @app = lib.express()
     @app.use lib.session {
       secret: CONFIG.SESSIONSECRET
-      resave: no
-      saveUninitialized: yes
       proxy: CONFIG.REVERSEPROXY
+      resave: yes
+      saveUninitialized: no
     }
     @app.use(lib.bodyParser.json())
     @app.use(lib.bodyParser.urlencoded({ extended: true }))
@@ -110,6 +117,7 @@ module.exports = class Server
     @route 'post', '/login', @loginRequest
     @route 'post', '/register', @registerRequest
     @authedRoute 'get', '/data', @dataRequest
+    @authedRoute 'post', '/logout', @logoutRequest
 
     @server = @app.listen CONFIG.LISTEN, =>
       host = @server.address().address
@@ -122,26 +130,36 @@ module.exports = class Server
   authedRoute: (method, uri, functor) ->
     self = this
     @app[method] '/api' + uri, (req, res) ->
-      if req.headers['x-chow-token']? and req.session.token? and req.headers['x-chow-token'] is req.session.token
+      token = req.headers['x-chow-token']
+      LOG 'incoming token', token, req.session.token
+      if token? and req.session.token? and token is req.session.token
         if req.session.expires > (new Date().getTime())
+          LOG 'authed by session', token
           functor.apply self, [req, res]
         else
+          LOG 'that session has expired', req.session.expires - (new Date().getTime()), 'ago'
           res.sendStatus 404
-      else if req.headers['x-chow-token']?
+      else if token?
         session = new Session()
-        session.load req.headers['x-chow-token'], (found) ->
-          if found and req.headers['x-chow-token'] is found.token and found.expires > (new Date().getTime())
+        session.load token, (found) ->
+          if found and token is found.token and found.expires < (new Date().getTime())
             req.session.token = found.token
             req.session.expires = found.expires
             functor.apply self, [req, res]
           else
-            req.session.token = undefined
+            # Delete session
+            req.session.destroy()
             res.sendStatus 404
       else
         res.sendStatus 404
 
   dataRequest: (req, res) ->
     res.send 'Logged in!'
+
+  logoutRequest: (req, res) ->
+    # delete session
+    req.session.destroy()
+    res.send 'ok'
 
   registerRequest: (req, res) ->
     if !req.body.username? or !req.body.password?
@@ -155,10 +173,17 @@ module.exports = class Server
           user.username = req.body.username
           user.password = req.body.password
           user.registered = (new Date().getTime())
-          newSessionToken req
+          session = user.newSessionToken()
+          req.session.token = session.token
+          req.session.expires = session.expires
           user.save ->
             LOG 'registerRequest: new user registered:', req.body.username
-            res.send 'ok'
+            res.send {
+              error: false
+              username: user.username
+              token: session.token
+              expires: session.expires
+            }
 
   loginRequest: (req, res) ->
     if req.body.username? and req.body.password?
@@ -166,13 +191,18 @@ module.exports = class Server
       user.load req.body.username, (found) ->
         if found
           SHA1 req.body.password, (password) ->
+            LOG 'found user', found
             if found.password is password
-              newSessionToken req
-              res.send {
-                username: req.body.username
-                token: session.token
-                expires: session.expires
-              }
+              session = user.newSessionToken()
+              req.session.token = session.token
+              req.session.expires = session.expires
+              username = req.body.username
+              template = '<html><body><script>'
+              template += 'document.cookie="x-chow-token=' + session.token + '; path=/";'
+              template += 'document.location.href = "/";'
+              template += '</script></body><html>'
+              res.set 'Content-Type', 'text/html'
+              res.send new Buffer template
             else
               LOG 'loginRequest: failed log in for:', req.body.username, '- Password does not match:', found.password, password
               req.session.token = undefined

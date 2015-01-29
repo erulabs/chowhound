@@ -29,57 +29,16 @@ LoginWindow = (function(_super) {
     this.password = '';
   }
 
-  LoginWindow.prototype.submit = function() {
-    return this.app.$http.post('/api/login', {
-      username: this.username,
-      password: this.password
-    }).success((function(_this) {
-      return function(data, status, headers, config) {
-        if (data.error) {
-          return alert(data.error);
-        } else {
-          _this.show = false;
-          return _this.login(data);
-        }
-      };
-    })(this)).error(function(data, status, headers, config) {
-      return console.log('error', data);
-    });
-  };
-
-  LoginWindow.prototype.tokenLogin = function(username, token) {
-    return this.app.$http.post('/api/login', {
-      username: username,
-      token: token
-    }).success((function(_this) {
-      return function(data, status, headers, config) {
-        if (data.error) {
-          alert(data.error);
-          _this.app.$cookieStore.remove('token');
-          return _this.app.$scope.login.show = true;
-        } else {
-          _this.show = false;
-          return _this.login(data);
-        }
-      };
-    })(this)).error(function(data, status, headers, config) {
-      return console.log('error', data);
-    });
-  };
-
   LoginWindow.prototype.register = function() {
     this.show = false;
     return this.app.$scope.register.show = true;
   };
 
   LoginWindow.prototype.login = function(data) {
-    this.app.$scope.loading.show = false;
     this.app.$scope.graph.init();
     this.app.$scope.datatable.init();
     this.app.$scope.profile.init();
-    this.app.$scope.stats.show = true;
-    this.app.$cookies.token = data.token;
-    return this.app.$cookies.username = data.username;
+    return this.app.$scope.stats.show = true;
   };
 
   return LoginWindow;
@@ -108,6 +67,8 @@ RegisterWindow = (function(_super) {
           return alert(data.error);
         } else {
           _this.show = false;
+          _this.app.$cookies['x-chow-token'] = data.token;
+          _this.app.$cookies['x-chow-token-expires'] = data.expires;
           return _this.app.$scope.login.login(data);
         }
       };
@@ -137,15 +98,18 @@ ProfileWindow = (function(_super) {
   };
 
   ProfileWindow.prototype.logout = function() {
-    return this.app.$http.post('/api/logout', {
-      logout: true
+    return this.app.$http({
+      method: 'POST',
+      url: '/api/logout',
+      headers: {
+        'x-chow-token': this.app.$cookies['x-chow-token'].replace(/"/g, '')
+      }
     }).success((function(_this) {
       return function(data, status, headers, config) {
         if (data.error) {
           return alert(data.error);
         } else {
-          _this.app.$cookieStore.remove('token');
-          _this.app.$cookieStore.remove('username');
+          _this.app.$cookieStore.remove('x-chow-token');
           _this.app.$scope.login.show = true;
           _this.app.$scope.graph.show = false;
           _this.app.$scope.datatable.show = false;
@@ -267,12 +231,12 @@ ManagerWindow = (function(_super) {
 
 app.controller('chowhound', Chowhound = (function() {
   function Chowhound($scope, $http, $cookies, $cookieStore, $location) {
+    var token;
     this.$scope = $scope;
     this.$http = $http;
     this.$cookies = $cookies;
     this.$cookieStore = $cookieStore;
     this.$location = $location;
-    this.$scope.loading = new AppWindow(this, true);
     this.$scope.login = new LoginWindow(this);
     this.$scope.register = new RegisterWindow(this);
     this.$scope.profile = new ProfileWindow(this);
@@ -281,25 +245,28 @@ app.controller('chowhound', Chowhound = (function() {
     this.$scope.datatable = new DatatableWindow(this);
     this.$scope.manager = new ManagerWindow(this);
     this.$scope["break"] = new BreakWindow(this);
-    this.$http({
-      method: 'GET',
-      url: '/api/data',
-      headers: {
-        'x-chow-user': this.$cookies.username,
-        'x-chow-token': this.$cookies.token
-      }
-    }).success((function(_this) {
-      return function(data, status, headers) {
-        return _this.$scope.login.login(data);
-      };
-    })(this)).error((function(_this) {
-      return function(data, status, headers) {
-        if (status === 404) {
-          _this.$scope.loading.show = false;
-          return _this.$scope.login.show = true;
+    token = this.$cookies['x-chow-token'];
+    if (token != null) {
+      this.$http({
+        method: 'GET',
+        url: '/api/data',
+        headers: {
+          'x-chow-token': this.$cookies['x-chow-token'].replace(/"/g, '')
         }
-      };
-    })(this));
+      }).success((function(_this) {
+        return function(data, status, headers) {
+          return _this.$scope.login.login(data);
+        };
+      })(this)).error((function(_this) {
+        return function(data, status, headers) {
+          if (status === 404) {
+            return _this.$scope.login.show = true;
+          }
+        };
+      })(this));
+    } else {
+      this.$scope.login.show = true;
+    }
   }
 
   return Chowhound;

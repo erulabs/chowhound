@@ -10,44 +10,14 @@ class LoginWindow extends AppWindow
   constructor: (@app, @show) ->
     @username = ''
     @password = ''
-  submit: ->
-    @app.$http.post('/api/login', {
-      username: @username
-      password: @password
-    })
-      .success (data, status, headers, config) =>
-        if data.error
-          alert data.error
-        else
-          @show = false
-          @login(data)
-          # if manager...
-      .error (data, status, headers, config) ->
-        console.log 'error', data
-  tokenLogin: (username, token) ->
-    @app.$http.post '/api/login', { username: username, token: token }
-      .success (data, status, headers, config) =>
-        if data.error
-          alert data.error
-          @app.$cookieStore.remove 'token'
-          @app.$scope.login.show = yes
-        else
-          @show = false
-          @login(data)
-          # if manager...
-      .error (data, status, headers, config) ->
-        console.log 'error', data
   register: ->
     @show = false
     @app.$scope.register.show = yes
   login: (data) ->
-    @app.$scope.loading.show = no
     @app.$scope.graph.init()
     @app.$scope.datatable.init()
     @app.$scope.profile.init()
     @app.$scope.stats.show = yes
-    @app.$cookies.token = data.token
-    @app.$cookies.username = data.username
 
 class RegisterWindow extends AppWindow
   constructor: (@app, @show) ->
@@ -65,6 +35,8 @@ class RegisterWindow extends AppWindow
           alert data.error
         else
           @show = false
+          @app.$cookies['x-chow-token'] = data.token
+          @app.$cookies['x-chow-token-expires'] = data.expires
           @app.$scope.login.login(data)
       .error (data, status, headers, config) ->
         console.log 'error', data
@@ -76,15 +48,16 @@ class ProfileWindow extends AppWindow
   init: ->
     @show = no
   logout: ->
-    @app.$http.post('/api/logout', {
-      logout: true
+    @app.$http({
+      method: 'POST'
+      url: '/api/logout'
+      headers: { 'x-chow-token': @app.$cookies['x-chow-token'].replace /"/g, '' }
     })
       .success (data, status, headers, config) =>
         if data.error
           alert data.error
         else
-          @app.$cookieStore.remove 'token'
-          @app.$cookieStore.remove 'username'
+          @app.$cookieStore.remove 'x-chow-token'
           @app.$scope.login.show = yes
           @app.$scope.graph.show = no
           @app.$scope.datatable.show = no
@@ -139,7 +112,6 @@ class ManagerWindow extends AppWindow
 
 app.controller 'chowhound', class Chowhound
   constructor: (@$scope, @$http, @$cookies, @$cookieStore, @$location) ->
-    @$scope.loading = new AppWindow this, yes
     @$scope.login = new LoginWindow this
     @$scope.register = new RegisterWindow this
     @$scope.profile = new ProfileWindow this
@@ -148,17 +120,17 @@ app.controller 'chowhound', class Chowhound
     @$scope.datatable = new DatatableWindow this
     @$scope.manager = new ManagerWindow this
     @$scope.break = new BreakWindow this
-    @$http({
-      method: 'GET'
-      url: '/api/data'
-      headers: {
-        'x-chow-user': @$cookies.username
-        'x-chow-token': @$cookies.token
-      }
-    })
-      .success (data, status, headers) =>
-        @$scope.login.login(data)
-      .error (data, status, headers) =>
-        if status is 404
-          @$scope.loading.show = no
-          @$scope.login.show = yes
+    token = @$cookies['x-chow-token']
+    if token?
+      @$http({
+        method: 'GET'
+        url: '/api/data'
+        headers: { 'x-chow-token': @$cookies['x-chow-token'].replace /"/g, '' }
+      })
+        .success (data, status, headers) =>
+          @$scope.login.login(data)
+        .error (data, status, headers) =>
+          if status is 404
+            @$scope.login.show = yes
+    else
+      @$scope.login.show = yes

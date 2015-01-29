@@ -12,7 +12,7 @@ if (process.env.DBPATH !== undefined) {
   set.DBPATH = process.env.DBPATH;
 }
 
-set.SESSIONLENGTH = 43200;
+set.SESSIONLENGTH = 43200 * 1000;
 if (process.env.SESSIONLENGTH !== undefined) {
   set.SESSIONLENGTH = process.env.SESSIONLENGTH;
 }
