@@ -30,7 +30,8 @@
     "hiredis": "^0.1.17",
     "multer": "^0.1.6",
     "rand-token": "^0.2.1",
-    "redis": "^0.12.1"
+    "redis": "^0.12.1",
+    "type-is": "^1.5.5"
   },
   "devDependencies": {
     "abstract-leveldown": "^2.1.0",
