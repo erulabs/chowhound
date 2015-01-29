@@ -58,11 +58,11 @@ html(lang="en")
           div
             button.btn.btn-primary.padded(data-ng-show="!showJoinTeam", data-ng-click="showJoinTeam = !showJoinTeam") Create a new team!
             div(data-ng-show="showJoinTeam")
-              form(data-ng-submit=)
+              form(data-ng-submit="profile.createTeam(newCreateTeamName)")
                 .input-group.padded
-                  input(type="text", class="form-control", placeholder="Team name")
+                  input(type="text", class="form-control", placeholder="Choose a new team name!", data-ng-model="newCreateTeamName")
                   span.input-group-btn
-                    button.btn.btn-default(type="button") Create!
+                    button.btn.btn-default(type="button", data-ng-click="profile.createTeam(newCreateTeamName)") Create!
         .panel.panel-primary(data-ng-show="stats.team")
           .panel-heading Profile
           .panel-body

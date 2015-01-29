@@ -58,6 +58,7 @@ class ProfileWindow extends AppWindow
           alert data.error
         else
           @app.$cookieStore.remove 'x-chow-token'
+          @app.$cookieStore.remove 'x-chow-token-expires'
           @app.$scope.login.show = yes
           @app.$scope.graph.show = no
           @app.$scope.datatable.show = no
@@ -66,6 +67,9 @@ class ProfileWindow extends AppWindow
           @app.$scope.stats.show = no
       .error (data, status, headers, config) ->
         console.log 'error', data
+  createTeam: (teamName) ->
+    console.log 'creating team', teamName
+
 
 class BreakWindow extends AppWindow
   init: ->
@@ -121,6 +125,11 @@ app.controller 'chowhound', class Chowhound
     @$scope.manager = new ManagerWindow this
     @$scope.break = new BreakWindow this
     token = @$cookies['x-chow-token']
+    expires = @$cookies['x-chow-token-expires']
+    if expires < (new Date().getTime())
+      token = undefined
+      @$cookieStore.remove 'x-chow-token'
+      @$cookieStore.remove 'x-chow-token-expires'
     if token?
       @$http({
         method: 'GET'
@@ -131,6 +140,8 @@ app.controller 'chowhound', class Chowhound
           @$scope.login.login(data)
         .error (data, status, headers) =>
           if status is 404
+            @$cookieStore.remove 'x-chow-token'
+            @$cookieStore.remove 'x-chow-token-expires'
             @$scope.login.show = yes
     else
       @$scope.login.show = yes

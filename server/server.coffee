@@ -29,6 +29,8 @@ class Model
       return this.constructor.name + '_' + key
     else
       return this.constructor.name + '_' + this[@key]
+  del: (callback) ->
+    DB.del self.keyName(), callback
   save: (callback) ->
     return unless this.savable?
     saveData = {}
@@ -36,7 +38,7 @@ class Model
     this.presave ->
       for item, _p of self.savable
         saveData[item] = self[item] if self[item]?
-      LOG 'DB saving', self.keyName(), JSON.stringify(saveData)
+      #LOG 'DB saving', self.keyName(), JSON.stringify(saveData)
       DB.put self.keyName(), JSON.stringify(saveData), (error) ->
         if error
           LOG 'DBERROR:', 'saving model', self.keyName(), 'Error:', error
@@ -131,23 +133,23 @@ module.exports = class Server
     self = this
     @app[method] '/api' + uri, (req, res) ->
       token = req.headers['x-chow-token']
-      LOG 'incoming token', token, req.session.token
-      if token? and req.session.token? and token is req.session.token
-        if req.session.expires > (new Date().getTime())
-          LOG 'authed by session', token
-          functor.apply self, [req, res]
-        else
-          LOG 'that session has expired', req.session.expires - (new Date().getTime()), 'ago'
-          res.sendStatus 404
+      now = (new Date().getTime())
+      #LOG 'incoming token', token, req.session.token
+      if token? and req.session.token? and token is req.session.token and req.session.expires > now
+        #LOG 'authed by session', token
+        functor.apply self, [req, res]
       else if token?
+        #LOG 'trying to load token', token, 'from db'
         session = new Session()
         session.load token, (found) ->
-          if found and token is found.token and found.expires < (new Date().getTime())
+          #LOG 'found', found
+          if found and token is found.token and found.expires > now
             req.session.token = found.token
             req.session.expires = found.expires
             functor.apply self, [req, res]
           else
-            # Delete session
+            #LOG 'destroying session'
+            DB.del 'Session_' + token
             req.session.destroy()
             res.sendStatus 404
       else
@@ -191,7 +193,7 @@ module.exports = class Server
       user.load req.body.username, (found) ->
         if found
           SHA1 req.body.password, (password) ->
-            LOG 'found user', found
+            # LOG 'found user', found
             if found.password is password
               session = user.newSessionToken()
               req.session.token = session.token
@@ -199,19 +201,20 @@ module.exports = class Server
               username = req.body.username
               template = '<html><body><script>'
               template += 'document.cookie="x-chow-token=' + session.token + '; path=/";'
+              template += 'document.cookie="x-chow-token-expires=' + session.expires + '; path=/";'
               template += 'document.location.href = "/";'
               template += '</script></body><html>'
               res.set 'Content-Type', 'text/html'
               res.send new Buffer template
             else
-              LOG 'loginRequest: failed log in for:', req.body.username, '- Password does not match:', found.password, password
-              req.session.token = undefined
+              #LOG 'loginRequest: failed log in for:', req.body.username, '- Password does not match:', found.password, password
+              req.session.destroy()
               res.redirect '/'
         else
-          LOG 'loginRequest: failed log in for:', req.body.username, '- No username found by name', req.body.username
-          req.session.token = undefined
+          #LOG 'loginRequest: failed log in for:', req.body.username, '- No username found by name', req.body.username
+          req.session.destroy()
           res.redirect '/'
     else
-      req.session.token = undefined
+      req.session.destroy()
       res.redirect '/'
 

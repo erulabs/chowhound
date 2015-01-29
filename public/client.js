@@ -110,6 +110,7 @@ ProfileWindow = (function(_super) {
           return alert(data.error);
         } else {
           _this.app.$cookieStore.remove('x-chow-token');
+          _this.app.$cookieStore.remove('x-chow-token-expires');
           _this.app.$scope.login.show = true;
           _this.app.$scope.graph.show = false;
           _this.app.$scope.datatable.show = false;
@@ -121,6 +122,10 @@ ProfileWindow = (function(_super) {
     })(this)).error(function(data, status, headers, config) {
       return console.log('error', data);
     });
+  };
+
+  ProfileWindow.prototype.createTeam = function(teamName) {
+    return console.log('creating team', teamName);
   };
 
   return ProfileWindow;
@@ -231,7 +236,7 @@ ManagerWindow = (function(_super) {
 
 app.controller('chowhound', Chowhound = (function() {
   function Chowhound($scope, $http, $cookies, $cookieStore, $location) {
-    var token;
+    var expires, token;
     this.$scope = $scope;
     this.$http = $http;
     this.$cookies = $cookies;
@@ -246,6 +251,12 @@ app.controller('chowhound', Chowhound = (function() {
     this.$scope.manager = new ManagerWindow(this);
     this.$scope["break"] = new BreakWindow(this);
     token = this.$cookies['x-chow-token'];
+    expires = this.$cookies['x-chow-token-expires'];
+    if (expires < (new Date().getTime())) {
+      token = void 0;
+      this.$cookieStore.remove('x-chow-token');
+      this.$cookieStore.remove('x-chow-token-expires');
+    }
     if (token != null) {
       this.$http({
         method: 'GET',
@@ -260,6 +271,8 @@ app.controller('chowhound', Chowhound = (function() {
       })(this)).error((function(_this) {
         return function(data, status, headers) {
           if (status === 404) {
+            _this.$cookieStore.remove('x-chow-token');
+            _this.$cookieStore.remove('x-chow-token-expires');
             return _this.$scope.login.show = true;
           }
         };
