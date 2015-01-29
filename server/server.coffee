@@ -198,10 +198,11 @@ module.exports = class Server
               session = user.newSessionToken()
               req.session.token = session.token
               req.session.expires = session.expires
+              age = (session.expires - (new Date().getTime())) / 1000
               username = req.body.username
               template = '<html><body><script>'
-              template += 'document.cookie="x-chow-token=' + session.token + '; path=/";'
-              template += 'document.cookie="x-chow-token-expires=' + session.expires + '; path=/";'
+              template += 'document.cookie="x-chow-token=' + session.token + '; max-age=' + age + '; path=/";'
+              template += 'document.cookie="x-chow-token-expires=' + session.expires + '; max-age=' + age + '; path=/";'
               template += 'document.location.href = "/";'
               template += '</script></body><html>'
               res.set 'Content-Type', 'text/html'
