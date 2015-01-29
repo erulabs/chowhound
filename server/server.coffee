@@ -8,7 +8,7 @@ lib.session     = require 'express-session'
 lib.bodyParser  = require 'body-parser'
 lib.multer      = require 'multer'
 lib.randtoken   = require 'rand-token'
-lib.levelup     = require 'levelup'
+
 global.UID      = lib.randtoken.uid
 global.DB       = {}
 
@@ -16,7 +16,13 @@ require './helpers.coffee'
 
 module.exports = class Server
   init: ->
-    global.DB = lib.levelup CONFIG.DBPATH
+    if ENV is 'dev'
+      lib.levelup = require 'levelup'
+      global.DB = lib.levelup CONFIG.DBPATH
+    else
+      lib.redis = require 'redis'
+      global.DB = lib.redis.createClient(CONFIG.DBPORT, CONFIG.DBSERVER, {})
+
     @app = lib.express()
     @app.use lib.session {
       secret: CONFIG.SESSIONSECRET

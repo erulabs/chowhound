@@ -16,12 +16,18 @@ module.exports = class Model
       for item, _p of self.savable
         saveData[item] = self[item] if self[item]?
       #LOG 'DB saving', self.keyName(), JSON.stringify(saveData)
-      DB.put self.keyName(), JSON.stringify(saveData), (error) ->
+      putCallback = (error) ->
         if error
           LOG 'DBERROR:', 'saving model', self.keyName(), 'Error:', error
           return callback error if callback?
         else
           callback false if callback?
+      # LevelDB in development
+      if ENV is 'dev'
+        DB.put self.keyName(), JSON.stringify(saveData), putCallback
+      # Redis in production
+      else
+        DB.hmset self.keyName(), saveData, putCallback
   load: (key, callback) ->
     self = this
     DB.get self.keyName(key), (error, raw) ->
@@ -32,7 +38,10 @@ module.exports = class Model
           LOG 'DBERROR:', 'getting model', self.keyName(), 'Error:', error
           return callback false if callback?
       else
-        try value = JSON.parse raw
+        if ENV is 'dev'
+          try value = JSON.parse raw
+        else
+          value = raw
         for properyName, propery of value
           self[properyName] = propery if self.savable[properyName]
         callback value if callback?

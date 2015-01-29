@@ -12,9 +12,18 @@ if (process.env.LISTEN !== undefined) {
   set.LISTEN = process.env.LISTEN;
 }
 
+// Only used if in "dev" mode and using LevelDB instead of Redis
 set.DBPATH = 'tmp/chow.db';
 if (process.env.DBPATH !== undefined) {
   set.DBPATH = process.env.DBPATH;
+}
+set.DBSERVER = '127.0.0.1';
+if (process.env.DBSERVER !== undefined) {
+  set.DBSERVER = process.env.DBSERVER;
+}
+set.DBPORT = 6379;
+if (process.env.DBPORT !== undefined) {
+  set.DBPORT = process.env.DBPORT;
 }
 
 set.SESSIONLENGTH = 100000 * 1000;
