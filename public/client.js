@@ -119,7 +119,17 @@ ProfileWindow = (function(_super) {
   };
 
   ProfileWindow.prototype.createTeam = function(teamName) {
-    return console.log('creating team', teamName);
+    return this.app.post('/new/team', {
+      name: teamName
+    }).success(function(data, status, headers, config) {
+      if (data.error) {
+        return alert(data.error);
+      } else {
+        return console.log('created new team');
+      }
+    }).error(function(data, status, headers, config) {
+      return console.log('error', data);
+    });
   };
 
   return ProfileWindow;

@@ -64,8 +64,14 @@ class ProfileWindow extends AppWindow
       .error (data, status, headers, config) ->
         console.log 'error', data
   createTeam: (teamName) ->
-    console.log 'creating team', teamName
-
+    @app.post '/new/team', { name: teamName }
+      .success (data, status, headers, config) ->
+        if data.error
+          alert data.error
+        else
+          console.log 'created new team'
+      .error (data, status, headers, config) ->
+        console.log 'error', data
 
 class BreakWindow extends AppWindow
   init: ->

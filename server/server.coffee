@@ -1,109 +1,22 @@
 'use strict'
 
-CONFIG          = require './../shared/config.js'
-ENV             = CONFIG.ENV
+global.CONFIG   = require './../shared/config.js'
+global.ENV      = CONFIG.ENV
 lib             = {}
 lib.express     = require 'express'
 lib.session     = require 'express-session'
-lib.crypto      = require 'crypto'
 lib.bodyParser  = require 'body-parser'
 lib.multer      = require 'multer'
 lib.randtoken   = require 'rand-token'
 lib.levelup     = require 'levelup'
-UID             = lib.randtoken.uid
-DB              = {}
+global.UID      = lib.randtoken.uid
+global.DB       = {}
 
-LOG = ->
-  date = new Date()
-  process.stdout.write(date.toTimeString().split(' ')[0] + ' ')
-  console.log.apply this, arguments
-
-SHA1 = (str, callback) ->
-  hmac = lib.crypto.createHmac 'sha1', CONFIG.CRYPTOKEY
-  hmac.setEncoding 'hex'
-  hmac.end str, 'utf8', -> callback hmac.read()
-
-class Model
-  keyName: (key) ->
-    if key
-      return this.constructor.name + '_' + key
-    else
-      return this.constructor.name + '_' + this[@key]
-  del: (callback) ->
-    DB.del self.keyName(), callback
-  save: (callback) ->
-    return unless this.savable?
-    saveData = {}
-    self = this
-    this.presave ->
-      for item, _p of self.savable
-        saveData[item] = self[item] if self[item]?
-      #LOG 'DB saving', self.keyName(), JSON.stringify(saveData)
-      DB.put self.keyName(), JSON.stringify(saveData), (error) ->
-        if error
-          LOG 'DBERROR:', 'saving model', self.keyName(), 'Error:', error
-          return callback error if callback?
-        else
-          callback false if callback?
-  load: (key, callback) ->
-    self = this
-    DB.get self.keyName(key), (error, raw) ->
-      if error
-        if error.type is 'NotFoundError'
-          return callback false if callback?
-        else
-          LOG 'DBERROR:', 'getting model', self.keyName(), 'Error:', error
-          return callback false if callback?
-      else
-        try value = JSON.parse raw
-        for properyName, propery of value
-          self[properyName] = propery if self.savable[properyName]
-        callback value if callback?
-  presave: (callback) -> callback()
-
-class Team extends Model
-  constructor: ->
-    @key = 'name'
-    @savable = {
-      members: true
-      name: true
-      managers: true
-    }
-
-class User extends Model
-  constructor: ->
-    @key = 'username'
-    @savable = {
-      password: true
-      username: true
-      registered: true
-    }
-  presave: (callback) ->
-    self = this
-    SHA1 self.password, (password) ->
-      self.password = password
-      callback()
-  newSessionToken: ->
-    session = new Session()
-    session.token = UID 32
-    session.expires = (new Date().getTime()) + CONFIG.SESSIONLENGTH
-    session.save()
-    return session
-
-class Session extends Model
-  constructor: ->
-    @key = 'token'
-    @savable = {
-      username: true
-      expires: true
-      token: true
-    }
+require './helpers.coffee'
 
 module.exports = class Server
-  constructor: ->
-
   init: ->
-    DB = lib.levelup CONFIG.DBPATH
+    global.DB = lib.levelup CONFIG.DBPATH
     @app = lib.express()
     @app.use lib.session {
       secret: CONFIG.SESSIONSECRET
@@ -115,10 +28,19 @@ module.exports = class Server
     @app.use(lib.bodyParser.urlencoded({ extended: true }))
     @app.use(lib.multer())
 
-    @route 'post', '/login', @loginRequest
-    @route 'post', '/register', @registerRequest
+    global.Model = require './models/Model.coffee'
+    global.Team = require './models/Team.coffee'
+    global.User = require './models/User.coffee'
+    global.Session = require './models/Session.coffee'
+
+    @ctrlr = {}
+    @ctrlr.User = new (require './controllers/User.coffee') this
+
+    @route 'post', '/login', @ctrlr.User.login
+    @route 'post', '/register', @ctrlr.User.register
+    @authedRoute 'post', '/logout', @ctrlr.User.logout
+    @authedRoute 'post', '/new/team', @ctrlr.User.newTeam
     @authedRoute 'get', '/data', @dataRequest
-    @authedRoute 'post', '/logout', @logoutRequest
 
     @server = @app.listen CONFIG.LISTEN, =>
       host = @server.address().address
@@ -157,62 +79,4 @@ module.exports = class Server
   dataRequest: (req, res) ->
     res.send 'Logged in!'
 
-  logoutRequest: (req, res) ->
-    req.session.destroy()
-    res.send 'ok'
 
-  registerRequest: (req, res) ->
-    if !req.body.username? or !req.body.password?
-      res.send { error: 'Supply a username and password' }
-    else
-      user = new User()
-      user.load req.body.username, (found) ->
-        if found
-          res.send { error: 'Username already taken' }
-        else
-          user.username = req.body.username
-          user.password = req.body.password
-          user.registered = (new Date().getTime())
-          session = user.newSessionToken()
-          req.session.token = session.token
-          req.session.expires = session.expires
-          user.save ->
-            LOG 'registerRequest: new user registered:', req.body.username
-            res.send {
-              error: false
-              username: user.username
-              token: session.token
-              expires: session.expires
-            }
-
-  loginRequest: (req, res) ->
-    if req.body.username? and req.body.password?
-      user = new User()
-      user.load req.body.username, (found) ->
-        if found
-          SHA1 req.body.password, (password) ->
-            # LOG 'found user', found
-            if found.password is password
-              session = user.newSessionToken()
-              req.session.token = session.token
-              req.session.expires = session.expires
-              username = req.body.username
-              template = '<html><body><script>'
-              template += 'document.cookie="x-chow-token=' + session.token + '; max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
-              template += 'document.cookie="x-chow-token-expires=' + session.expires + '; '
-              template += 'max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
-              template += 'document.location.href = "/";'
-              template += '</script></body><html>'
-              res.set 'Content-Type', 'text/html'
-              res.send new Buffer template
-            else
-              #LOG 'loginRequest: failed log in for:', req.body.username, '- Password does not match:', found.password, password
-              req.session.destroy()
-              res.redirect '/'
-        else
-          #LOG 'loginRequest: failed log in for:', req.body.username, '- No username found by name', req.body.username
-          req.session.destroy()
-          res.redirect '/'
-    else
-      req.session.destroy()
-      res.redirect '/'
