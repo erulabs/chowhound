@@ -30,7 +30,8 @@ module.exports = class Model
         DB.hmset self.keyName(), saveData, putCallback
   load: (key, callback) ->
     self = this
-    DB.get self.keyName(key), (error, raw) ->
+    if ENV is 'dev' then method = 'get' else method = 'hgetall'
+    DB[method] self.keyName(key), (error, raw) ->
       if error
         if error.type is 'NotFoundError'
           return callback false if callback?

@@ -54,7 +54,7 @@ tasks = {
   server: [
     {
       path: './server/server.coffee'
-      watch: 'server/*.coffee'
+      watch: 'server/**/*.coffee'
       tasks: [ 'lint' ]
     }
   ]

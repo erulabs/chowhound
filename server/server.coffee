@@ -21,7 +21,7 @@ module.exports = class Server
       global.DB = lib.levelup CONFIG.DBPATH
     else
       lib.redis = require 'redis'
-      global.DB = lib.redis.createClient(CONFIG.DBPORT, CONFIG.DBSERVER, {})
+      global.DB = lib.redis.createClient CONFIG.DBPORT, CONFIG.DBSERVER, {}
 
     @app = lib.express()
     @app.use lib.session {
