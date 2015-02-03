@@ -1,10 +1,36 @@
 'use strict'
 
 module.exports = class UserController
-  constructor: (@app) ->
+  dataRequest: (req, res) ->
+    user = new User()
+    user.load req.session.username, (found) ->
+      if found
+        res.send { error: no, teams: found.teams, data: { 'foo': 'foo' } }
+      else
+        LOG 'The user', req.session.username, 'doesnt have a DB entry...'
+        res.send { error: 'youre not a real user...' }
 
   newTeam: (req, res) ->
-    res.send 'ok'
+    if req.body.name?
+      team = new Team()
+      team.load req.body.name, (found) ->
+        if found
+          res.send { error: 'That team name is already taken' }
+        else
+          team.members[req.session.username] = true
+          team.name = req.body.name
+          user = new User()
+          user.load req.session.username, (found) ->
+            if found
+              user.teams[team.name] = true
+              user.save()
+              team.save()
+              res.send { error: no, message: 'ok' }
+            else
+              LOG 'The user', req.session.username, 'doesnt have a DB entry...'
+              res.send { error: 'youre not a real user...' }
+    else
+      res.send { error: 'Provide a name' }
 
   logout: (req, res) ->
     req.session.destroy()
@@ -21,7 +47,7 @@ module.exports = class UserController
               session = user.newSessionToken()
               req.session.token = session.token
               req.session.expires = session.expires
-              username = req.body.username
+              req.session.username = req.body.username
               template = '<html><body><script>'
               template += 'document.cookie="x-chow-token=' + session.token + '; max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
               template += 'document.cookie="x-chow-token-expires=' + session.expires + '; '
@@ -31,11 +57,11 @@ module.exports = class UserController
               res.set 'Content-Type', 'text/html'
               res.send new Buffer template
             else
-              #LOG 'loginRequest: failed log in for:', req.body.username, '- Password does not match:', found.password, password
+              LOG 'loginRequest: failed log in for:', req.body.username, '- Password does not match:', found.password, password
               req.session.destroy()
               res.redirect '/'
         else
-          #LOG 'loginRequest: failed log in for:', req.body.username, '- No username found by name', req.body.username
+          LOG 'loginRequest: failed log in for:', req.body.username, '- No username found by name', req.body.username
           req.session.destroy()
           res.redirect '/'
     else
@@ -57,11 +83,12 @@ module.exports = class UserController
           session = user.newSessionToken()
           req.session.token = session.token
           req.session.expires = session.expires
+          req.session.username = req.body.username
           user.save ->
             LOG 'registerRequest: new user registered:', req.body.username
             res.send {
               error: false
-              username: user.username
+              username: req.body.username
               token: session.token
               expires: session.expires
             }

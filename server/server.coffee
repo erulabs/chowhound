@@ -48,7 +48,7 @@ module.exports = class Server
     @route 'post', '/register', @ctrlr.User.register
     @authedRoute 'post', '/logout', @ctrlr.User.logout
     @authedRoute 'post', '/new/team', @ctrlr.User.newTeam
-    @authedRoute 'get', '/data', @dataRequest
+    @authedRoute 'get', '/data', @ctrlr.User.dataRequest
 
     @server = @app.listen CONFIG.LISTEN, =>
       host = @server.address().address
@@ -64,7 +64,7 @@ module.exports = class Server
       token = req.headers['x-chow-token']
       now = (new Date().getTime())
       #LOG 'incoming token', token, req.session.token
-      if token? and req.session.token? and token is req.session.token and req.session.expires > now
+      if token? and req.session.token? and token is req.session.token and req.session.expires > now and req.session.username?
         #LOG 'authed by session', token
         functor.apply self, [req, res]
       else if token?
@@ -75,6 +75,8 @@ module.exports = class Server
           if found and token is found.token and found.expires > now
             req.session.token = found.token
             req.session.expires = found.expires
+            req.session.username = found.username
+            console.log 'user', req.session.username
             functor.apply self, [req, res]
           else
             #LOG 'destroying session'
@@ -83,8 +85,3 @@ module.exports = class Server
             res.sendStatus 404
       else
         res.sendStatus 404
-
-  dataRequest: (req, res) ->
-    res.send 'Logged in!'
-
-

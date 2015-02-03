@@ -9,7 +9,12 @@ module.exports = class User extends Model
       password: true
       username: true
       registered: true
+      teams: true
     }
+    @password = ''
+    @username = ''
+    @registered = false
+    @teams = {}
   presave: (callback) ->
     self = this
     SHA1 self.password, (password) ->

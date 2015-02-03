@@ -17,6 +17,7 @@ class LoginWindow extends AppWindow
     @app.$scope.graph.init()
     @app.$scope.datatable.init()
     @app.$scope.profile.init()
+    @app.$scope.stats.teams = _.keys(data.teams)
     @app.$scope.stats.show = yes
 
 class RegisterWindow extends AppWindow
@@ -25,7 +26,7 @@ class RegisterWindow extends AppWindow
     @password = ''
     @groups = ''
   submit: ->
-    @app.$http.post('/api/register', {
+    @app.post('/register', {
       username: @username
       password: @password
       groups: @groups
@@ -65,11 +66,11 @@ class ProfileWindow extends AppWindow
         console.log 'error', data
   createTeam: (teamName) ->
     @app.post '/new/team', { name: teamName }
-      .success (data, status, headers, config) ->
+      .success (data, status, headers, config) =>
         if data.error
           alert data.error
         else
-          console.log 'created new team'
+          @app.initData()
       .error (data, status, headers, config) ->
         console.log 'error', data
 
@@ -80,6 +81,7 @@ class BreakWindow extends AppWindow
 class StatsWindow extends AppWindow
   init: ->
     @show = no
+    @team = false
 
 class GraphWindow extends AppWindow
   init: ->
@@ -133,19 +135,27 @@ app.controller 'chowhound', class Chowhound
       @$cookieStore.remove 'x-chow-token'
       @$cookieStore.remove 'x-chow-token-expires'
     if token?
-      @get '/data'
-        .success (data, status, headers) =>
-          @$scope.login.login(data)
-        .error (data, status, headers) =>
-          if status is 404
-            @$cookieStore.remove 'x-chow-token'
-            @$cookieStore.remove 'x-chow-token-expires'
-            @$scope.login.show = yes
+      @initData()
     else
       @$scope.login.show = yes
+  initData: ->
+    @get '/data'
+      .success (data, status, headers) =>
+        if data.error
+          @$cookieStore.remove 'x-chow-token'
+          @$cookieStore.remove 'x-chow-token-expires'
+          @$scope.login.show = yes
+        else
+          @$scope.login.login(data)
+      .error (data, status, headers) =>
+        if status is 404
+          @$cookieStore.remove 'x-chow-token'
+          @$cookieStore.remove 'x-chow-token-expires'
+          @$scope.login.show = yes
   http: (options) ->
     options.headers = {} unless options.headers?
-    options.headers['x-chow-token'] = @$cookies['x-chow-token'].replace /"/g, ''
+    if @$cookies['x-chow-token']?
+      options.headers['x-chow-token'] = @$cookies['x-chow-token'].replace /"/g, ''
     return @$http options
   get: (uri) ->
     return @http {

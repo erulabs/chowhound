@@ -12,3 +12,4 @@ module.exports = class Session extends Model
     }
     @token = UID 32
     @expires = (new Date().getTime()) + CONFIG.SESSIONLENGTH
+    @username = ''

@@ -38,6 +38,7 @@ LoginWindow = (function(_super) {
     this.app.$scope.graph.init();
     this.app.$scope.datatable.init();
     this.app.$scope.profile.init();
+    this.app.$scope.stats.teams = _.keys(data.teams);
     return this.app.$scope.stats.show = true;
   };
 
@@ -57,7 +58,7 @@ RegisterWindow = (function(_super) {
   }
 
   RegisterWindow.prototype.submit = function() {
-    return this.app.$http.post('/api/register', {
+    return this.app.post('/register', {
       username: this.username,
       password: this.password,
       groups: this.groups
@@ -121,13 +122,15 @@ ProfileWindow = (function(_super) {
   ProfileWindow.prototype.createTeam = function(teamName) {
     return this.app.post('/new/team', {
       name: teamName
-    }).success(function(data, status, headers, config) {
-      if (data.error) {
-        return alert(data.error);
-      } else {
-        return console.log('created new team');
-      }
-    }).error(function(data, status, headers, config) {
+    }).success((function(_this) {
+      return function(data, status, headers, config) {
+        if (data.error) {
+          return alert(data.error);
+        } else {
+          return _this.app.initData();
+        }
+      };
+    })(this)).error(function(data, status, headers, config) {
       return console.log('error', data);
     });
   };
@@ -159,7 +162,8 @@ StatsWindow = (function(_super) {
   }
 
   StatsWindow.prototype.init = function() {
-    return this.show = false;
+    this.show = false;
+    return this.team = false;
   };
 
   return StatsWindow;
@@ -262,29 +266,41 @@ app.controller('chowhound', Chowhound = (function() {
       this.$cookieStore.remove('x-chow-token-expires');
     }
     if (token != null) {
-      this.get('/data').success((function(_this) {
-        return function(data, status, headers) {
-          return _this.$scope.login.login(data);
-        };
-      })(this)).error((function(_this) {
-        return function(data, status, headers) {
-          if (status === 404) {
-            _this.$cookieStore.remove('x-chow-token');
-            _this.$cookieStore.remove('x-chow-token-expires');
-            return _this.$scope.login.show = true;
-          }
-        };
-      })(this));
+      this.initData();
     } else {
       this.$scope.login.show = true;
     }
   }
 
+  Chowhound.prototype.initData = function() {
+    return this.get('/data').success((function(_this) {
+      return function(data, status, headers) {
+        if (data.error) {
+          _this.$cookieStore.remove('x-chow-token');
+          _this.$cookieStore.remove('x-chow-token-expires');
+          return _this.$scope.login.show = true;
+        } else {
+          return _this.$scope.login.login(data);
+        }
+      };
+    })(this)).error((function(_this) {
+      return function(data, status, headers) {
+        if (status === 404) {
+          _this.$cookieStore.remove('x-chow-token');
+          _this.$cookieStore.remove('x-chow-token-expires');
+          return _this.$scope.login.show = true;
+        }
+      };
+    })(this));
+  };
+
   Chowhound.prototype.http = function(options) {
     if (options.headers == null) {
       options.headers = {};
     }
-    options.headers['x-chow-token'] = this.$cookies['x-chow-token'].replace(/"/g, '');
+    if (this.$cookies['x-chow-token'] != null) {
+      options.headers['x-chow-token'] = this.$cookies['x-chow-token'].replace(/"/g, '');
+    }
     return this.$http(options);
   };
 

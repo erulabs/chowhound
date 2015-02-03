@@ -10,3 +10,6 @@ module.exports = class Team extends Model
       name: true
       managers: true
     }
+    @members = {}
+    @managers = {}
+    @name = ''
