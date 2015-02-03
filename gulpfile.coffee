@@ -191,7 +191,9 @@ gulp.task 'server', ->
     dump: no
   }
   .on 'restart', ->
-    seq 'lint', 'spec', 'todos'
+    setTimeout ->
+      seq 'lint', 'spec', 'todos'
+    , 1000
 
 # gulp.task 'browserify', ->
 #   for entry in tasks.browserify

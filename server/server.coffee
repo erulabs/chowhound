@@ -18,9 +18,11 @@ module.exports = class Server
   init: ->
     if ENV is 'dev'
       lib.levelup = require 'levelup'
+      LOG 'Connecting to LevelDB at %s', CONFIG.DBPATH
       global.DB = lib.levelup CONFIG.DBPATH
     else
       lib.redis = require 'redis'
+      LOG 'Connecting to Redis at %s:%s', CONFIG.DBSERVER, CONFIG.DBPORT
       global.DB = lib.redis.createClient CONFIG.DBPORT, CONFIG.DBSERVER, {}
 
     @app = lib.express()
@@ -30,9 +32,9 @@ module.exports = class Server
       resave: yes
       saveUninitialized: no
     }
-    @app.use(lib.bodyParser.json())
-    @app.use(lib.bodyParser.urlencoded({ extended: true }))
-    @app.use(lib.multer())
+    @app.use lib.bodyParser.json()
+    @app.use lib.bodyParser.urlencoded({ extended: true })
+    @app.use lib.multer()
 
     global.Model = require './models/Model.coffee'
     global.Team = require './models/Team.coffee'
@@ -51,7 +53,7 @@ module.exports = class Server
     @server = @app.listen CONFIG.LISTEN, =>
       host = @server.address().address
       port = @server.address().port
-      LOG 'Listening at http://%s:%s', host, port
+      LOG 'Listening in %s mode at http://%s:%s', ENV, host, port
 
   route: (method, uri, functor) ->
     @app[method] '/api' + uri, (req, res) => functor.apply this, [req, res]

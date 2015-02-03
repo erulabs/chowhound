@@ -17,7 +17,5 @@ module.exports = class User extends Model
       callback()
   newSessionToken: ->
     session = new Session()
-    session.token = UID 32
-    session.expires = (new Date().getTime()) + CONFIG.SESSIONLENGTH
     session.save()
     return session

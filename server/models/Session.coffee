@@ -10,3 +10,5 @@ module.exports = class Session extends Model
       expires: true
       token: true
     }
+    @token = UID 32
+    @expires = (new Date().getTime()) + CONFIG.SESSIONLENGTH

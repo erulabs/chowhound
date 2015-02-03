@@ -2,7 +2,7 @@
 
 var set = {};
 
-set.ENV = 'prd';
+set.ENV = 'dev';
 if (process.env.ENV !== undefined) {
   set.ENV = process.env.ENV;
 }
