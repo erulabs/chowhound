@@ -56,6 +56,7 @@ class RegisterWindow extends AppWindow
 class ProfileWindow extends AppWindow
   init: ->
     @show = no
+    @username = @app.$cookies['x-chow-user']
   logout: ->
     @app.post '/logout'
       .success (data, status, headers, config) =>

@@ -2,6 +2,7 @@
 
 CONFIG = require './../shared/config.js'
 request = require 'request'
+randtoken = require 'rand-token'
 
 Server = require './../server/Server.coffee'
 Model = require './../server/models/Model.coffee'
@@ -53,3 +54,23 @@ describe 'API security', ->
     request.post HOST + '/api/login', { username: 'asgfd24352', password: 'fake' }, (error, resp, body) ->
       expect(resp.body).to.equal('Moved Temporarily. Redirecting to /')
       done()
+
+  describe 'should register properly', ->
+    newUser = randtoken.uid 16
+    newPass = randtoken.uid 16
+    it 'will create user "' + newUser + '" with password "' + newPass + '"', (done) ->
+      request.post HOST + '/api/register', { form: {
+        username: newUser, password: newPass
+      } }, (error, resp, body) ->
+        data = JSON.parse(resp.body)
+        expect(data.error).to.equal(false)
+        done()
+        #res.send {
+        #  error: false
+        #  username: req.body.username
+        #  token: session.token
+        #  expires: session.expires
+        #}
+
+
+

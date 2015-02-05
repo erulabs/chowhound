@@ -105,7 +105,8 @@ ProfileWindow = (function(_super) {
   }
 
   ProfileWindow.prototype.init = function() {
-    return this.show = false;
+    this.show = false;
+    return this.username = this.app.$cookies['x-chow-user'];
   };
 
   ProfileWindow.prototype.logout = function() {

@@ -193,7 +193,7 @@ gulp.task 'server', ->
   .on 'restart', ->
     setTimeout ->
       seq 'lint', 'spec', 'todos'
-    , 1000
+    , 2000
 
 # gulp.task 'browserify', ->
 #   for entry in tasks.browserify

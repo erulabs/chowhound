@@ -73,11 +73,10 @@ module.exports = class UserController
               req.session.username = req.body.username
               template = '<html><body><script>'
               template += 'document.cookie="x-chow-token=' + session.token + '; max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
-              template += 'document.cookie="x-chow-token-expires=' + session.expires + '; '
-              template += 'document.cookie="x-chow-user=' + req.body.username + '; '
-              template += 'max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
+              template += 'document.cookie="x-chow-token-expires=' + session.expires + '; max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
+              template += 'document.cookie="x-chow-user=' + req.body.username + '; max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
               template += 'document.location.href = "/";'
-              template += '</script></body><html>'
+              template += '</script></body></html>'
               res.set 'Content-Type', 'text/html'
               res.send new Buffer template
             else
@@ -94,6 +93,7 @@ module.exports = class UserController
 
   register: (req, res) ->
     if !req.body.username? or !req.body.password?
+      console.log 'request body was', req.body
       res.send { error: 'Supply a username and password' }
     else
       user = new User()
