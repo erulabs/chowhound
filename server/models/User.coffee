@@ -22,5 +22,6 @@ module.exports = class User extends Model
       callback()
   newSessionToken: ->
     session = new Session()
+    session.username = @username
     session.save()
     return session

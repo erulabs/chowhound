@@ -12,6 +12,11 @@ if (process.env.LISTEN !== undefined) {
   set.LISTEN = process.env.LISTEN;
 }
 
+set.LOGPATH = 'stdout';
+if (process.env.LOGPATH !== undefined) {
+  set.LOGPATH = process.env.LOGPATH;
+}
+
 // Only used if in "dev" mode and using LevelDB instead of Redis
 set.DBPATH = 'tmp/chow.db';
 if (process.env.DBPATH !== undefined) {

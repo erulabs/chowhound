@@ -76,7 +76,6 @@ module.exports = class Server
             req.session.token = found.token
             req.session.expires = found.expires
             req.session.username = found.username
-            console.log 'user', req.session.username
             functor.apply self, [req, res]
           else
             #LOG 'destroying session'
