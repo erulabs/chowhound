@@ -13,9 +13,9 @@ html(lang="en")
       span und
 
     .app(data-ng-controller="chowhound")
-      .menu(data-ng-show="!login.show && stats.team.length")
+      .menu(data-ng-show="!login.show && stats.teams.length")
         button.item.btn.btn-default.btn-xs(data-ng-click="profile.show = !profile.show", data-ng-class="{ active: profile.show }") Profile
-        button.item.btn.btn-default.btn-xs(data-ng-click="manager.show = !manager.show", data-ng-class="{ active: manager.show }") Manager
+        button.item.btn.btn-default.btn-xs(data-ng-show="stats.isManager", data-ng-click="manager.show = !manager.show", data-ng-class="{ active: manager.show }") Manager
         .break
           button.btn.btn-primary(data-ng-click="break.show = !break.show", data-ng-class="{ active: break.show }") Take off
 
@@ -63,9 +63,12 @@ html(lang="en")
                   input(type="text", class="form-control", placeholder="Choose a new team name!", data-ng-model="newCreateTeamName")
                   span.input-group-btn
                     button.btn.btn-default(type="button", data-ng-click="profile.createTeam(newCreateTeamName)") Create!
+
         .panel.panel-primary(data-ng-show="stats.teams.length")
           .panel-heading Profile
           .panel-body
+            div You're current a member of the following teams:
+            div(data-ng-repeat="team in stats.teams") {{ team }}
 
       .teams(data-ng-show="stats.show").col-md-12
         div(data-ng-show="stats.teams.length")
@@ -89,6 +92,7 @@ html(lang="en")
       footer.col-md-12
         div
           span.glyphicon.glyphicon-fire
+        div logged in as {{ profile.username }}
         a.less.item(data-ng-click="profile.logout()", data-ng-show="!login.show && !register.show", href="#") Logout
         div
           span &nbsp;by&nbsp;

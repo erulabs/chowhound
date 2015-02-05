@@ -2,6 +2,8 @@
 
 app = angular.module 'app', ['ngCookies']
 
+STATS_INTERVAL = 10
+
 class AppWindow
   constructor: (@app, @show) ->
     if !@show? then @show = no
@@ -9,16 +11,21 @@ class AppWindow
 class LoginWindow extends AppWindow
   constructor: (@app, @show) ->
     @username = ''
+    if @app.$cookies['x-chow-user']?
+      @username = @app.$cookies['x-chow-user']
     @password = ''
   register: ->
     @show = false
     @app.$scope.register.show = yes
   login: (data) ->
-    @app.$scope.graph.init()
     @app.$scope.datatable.init()
     @app.$scope.profile.init()
-    @app.$scope.stats.teams = _.keys(data.teams)
+    @app.$scope.stats.init()
     @app.$scope.stats.show = yes
+    @app.$scope.stats.teams = Object.keys(data.teams)
+    @app.$scope.stats.begin(STATS_INTERVAL)
+    if @app.$scope.stats.teams.length > 0
+      @app.$scope.graph.init(data)
 
 class RegisterWindow extends AppWindow
   constructor: (@app, @show) ->
@@ -37,6 +44,7 @@ class RegisterWindow extends AppWindow
         else
           @show = false
           @app.$cookies['x-chow-token'] = data.token
+          @app.$cookies['x-chow-user'] = @username
           @app.$cookies['x-chow-token-expires'] = data.expires
           @app.$scope.login.login(data)
       .error (data, status, headers, config) ->
@@ -81,36 +89,35 @@ class BreakWindow extends AppWindow
 class StatsWindow extends AppWindow
   init: ->
     @show = no
-    @team = false
+    @teams = []
+    @isManager = false
+    @graphData = {}
+  # Update the stats every interval
+  begin: (interval) ->
+    setInterval =>
+      @app.get '/data'
+        .success (data, status, headers) =>
+          if data.error
+            @logout()
+          else
+            if data.teams.length > 0
+              @app.$scope.graph.update data
+        .error (data, status, headers) => if status is 404 then @logout()
+    , interval * 1000
 
 class GraphWindow extends AppWindow
-  init: ->
+  init: (initialData) ->
     @show = yes
-    date = new Date()
-    thisHour = date.getHours()
-    ampm = 'am'
-    if thisHour > 11 then ampm = 'pm'
-    if thisHour > 12 then thisHour = thisHour - 12
-    if thisHour is 0 then thisHour = 12
-
-    hourList = []
-    for hour in [(thisHour - 1)..(thisHour + 7)]
-      if hour > 12
-        hour = hour - 12
-        hourList.push hour + 'am'
-      else
-        hourList.push hour + 'pm'
-
-    angular.element(document).ready ->
-      new Chartist.Line('.ct-chart', {
-        labels: hourList,
-        series: [
-          [5, 9, 7, 8, 5, 3, 5, 8]
-        ]
-      }, {
+    @chart = {}
+    angular.element(document).ready =>
+      @chart = new Chartist.Line('.ct-chart', initialData.graphdata, {
         low: 0,
         showArea: true
       })
+
+  update: (data) ->
+    console.log 'new data for graph', data
+    @chart.update data.graphdata
 
 class DatatableWindow extends AppWindow
   init: ->
@@ -132,26 +139,23 @@ app.controller 'chowhound', class Chowhound
     expires = @$cookies['x-chow-token-expires']
     if expires < (new Date().getTime())
       token = undefined
-      @$cookieStore.remove 'x-chow-token'
-      @$cookieStore.remove 'x-chow-token-expires'
+      @logout()
     if token?
       @initData()
     else
       @$scope.login.show = yes
+  logout: ->
+    @$cookieStore.remove 'x-chow-token'
+    @$cookieStore.remove 'x-chow-token-expires'
+    @$scope.login.show = yes
   initData: ->
     @get '/data'
       .success (data, status, headers) =>
         if data.error
-          @$cookieStore.remove 'x-chow-token'
-          @$cookieStore.remove 'x-chow-token-expires'
-          @$scope.login.show = yes
+          @logout()
         else
           @$scope.login.login(data)
-      .error (data, status, headers) =>
-        if status is 404
-          @$cookieStore.remove 'x-chow-token'
-          @$cookieStore.remove 'x-chow-token-expires'
-          @$scope.login.show = yes
+      .error (data, status, headers) => if status is 404 then @logout()
   http: (options) ->
     options.headers = {} unless options.headers?
     if @$cookies['x-chow-token']?

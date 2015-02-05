@@ -1,10 +1,12 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
-var AppWindow, BreakWindow, Chowhound, DatatableWindow, GraphWindow, LoginWindow, ManagerWindow, ProfileWindow, RegisterWindow, StatsWindow, app,
+var AppWindow, BreakWindow, Chowhound, DatatableWindow, GraphWindow, LoginWindow, ManagerWindow, ProfileWindow, RegisterWindow, STATS_INTERVAL, StatsWindow, app,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 app = angular.module('app', ['ngCookies']);
+
+STATS_INTERVAL = 10;
 
 AppWindow = (function() {
   function AppWindow(app, show) {
@@ -26,6 +28,9 @@ LoginWindow = (function(_super) {
     this.app = app;
     this.show = show;
     this.username = '';
+    if (this.app.$cookies['x-chow-user'] != null) {
+      this.username = this.app.$cookies['x-chow-user'];
+    }
     this.password = '';
   }
 
@@ -35,11 +40,15 @@ LoginWindow = (function(_super) {
   };
 
   LoginWindow.prototype.login = function(data) {
-    this.app.$scope.graph.init();
     this.app.$scope.datatable.init();
     this.app.$scope.profile.init();
-    this.app.$scope.stats.teams = _.keys(data.teams);
-    return this.app.$scope.stats.show = true;
+    this.app.$scope.stats.init();
+    this.app.$scope.stats.show = true;
+    this.app.$scope.stats.teams = Object.keys(data.teams);
+    this.app.$scope.stats.begin(STATS_INTERVAL);
+    if (this.app.$scope.stats.teams.length > 0) {
+      return this.app.$scope.graph.init(data);
+    }
   };
 
   return LoginWindow;
@@ -69,6 +78,7 @@ RegisterWindow = (function(_super) {
         } else {
           _this.show = false;
           _this.app.$cookies['x-chow-token'] = data.token;
+          _this.app.$cookies['x-chow-user'] = _this.username;
           _this.app.$cookies['x-chow-token-expires'] = data.expires;
           return _this.app.$scope.login.login(data);
         }
@@ -163,7 +173,29 @@ StatsWindow = (function(_super) {
 
   StatsWindow.prototype.init = function() {
     this.show = false;
-    return this.team = false;
+    this.teams = [];
+    this.isManager = false;
+    return this.graphData = {};
+  };
+
+  StatsWindow.prototype.begin = function(interval) {
+    return setInterval((function(_this) {
+      return function() {
+        return _this.app.get('/data').success(function(data, status, headers) {
+          if (data.error) {
+            return _this.logout();
+          } else {
+            if (data.teams.length > 0) {
+              return _this.app.$scope.graph.update(data);
+            }
+          }
+        }).error(function(data, status, headers) {
+          if (status === 404) {
+            return _this.logout();
+          }
+        });
+      };
+    })(this), interval * 1000);
   };
 
   return StatsWindow;
@@ -177,39 +209,22 @@ GraphWindow = (function(_super) {
     return GraphWindow.__super__.constructor.apply(this, arguments);
   }
 
-  GraphWindow.prototype.init = function() {
-    var ampm, date, hour, hourList, thisHour, _i, _ref, _ref1;
+  GraphWindow.prototype.init = function(initialData) {
     this.show = true;
-    date = new Date();
-    thisHour = date.getHours();
-    ampm = 'am';
-    if (thisHour > 11) {
-      ampm = 'pm';
-    }
-    if (thisHour > 12) {
-      thisHour = thisHour - 12;
-    }
-    if (thisHour === 0) {
-      thisHour = 12;
-    }
-    hourList = [];
-    for (hour = _i = _ref = thisHour - 1, _ref1 = thisHour + 7; _ref <= _ref1 ? _i <= _ref1 : _i >= _ref1; hour = _ref <= _ref1 ? ++_i : --_i) {
-      if (hour > 12) {
-        hour = hour - 12;
-        hourList.push(hour + 'am');
-      } else {
-        hourList.push(hour + 'pm');
-      }
-    }
-    return angular.element(document).ready(function() {
-      return new Chartist.Line('.ct-chart', {
-        labels: hourList,
-        series: [[5, 9, 7, 8, 5, 3, 5, 8]]
-      }, {
-        low: 0,
-        showArea: true
-      });
-    });
+    this.chart = {};
+    return angular.element(document).ready((function(_this) {
+      return function() {
+        return _this.chart = new Chartist.Line('.ct-chart', initialData.graphdata, {
+          low: 0,
+          showArea: true
+        });
+      };
+    })(this));
+  };
+
+  GraphWindow.prototype.update = function(data) {
+    console.log('new data for graph', data);
+    return this.chart.update(data.graphdata);
   };
 
   return GraphWindow;
@@ -262,8 +277,7 @@ app.controller('chowhound', Chowhound = (function() {
     expires = this.$cookies['x-chow-token-expires'];
     if (expires < (new Date().getTime())) {
       token = void 0;
-      this.$cookieStore.remove('x-chow-token');
-      this.$cookieStore.remove('x-chow-token-expires');
+      this.logout();
     }
     if (token != null) {
       this.initData();
@@ -272,13 +286,17 @@ app.controller('chowhound', Chowhound = (function() {
     }
   }
 
+  Chowhound.prototype.logout = function() {
+    this.$cookieStore.remove('x-chow-token');
+    this.$cookieStore.remove('x-chow-token-expires');
+    return this.$scope.login.show = true;
+  };
+
   Chowhound.prototype.initData = function() {
     return this.get('/data').success((function(_this) {
       return function(data, status, headers) {
         if (data.error) {
-          _this.$cookieStore.remove('x-chow-token');
-          _this.$cookieStore.remove('x-chow-token-expires');
-          return _this.$scope.login.show = true;
+          return _this.logout();
         } else {
           return _this.$scope.login.login(data);
         }
@@ -286,9 +304,7 @@ app.controller('chowhound', Chowhound = (function() {
     })(this)).error((function(_this) {
       return function(data, status, headers) {
         if (status === 404) {
-          _this.$cookieStore.remove('x-chow-token');
-          _this.$cookieStore.remove('x-chow-token-expires');
-          return _this.$scope.login.show = true;
+          return _this.logout();
         }
       };
     })(this));

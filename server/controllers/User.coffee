@@ -5,7 +5,30 @@ module.exports = class UserController
     user = new User()
     user.load req.session.username, (found) ->
       if found
-        res.send { error: no, teams: found.teams, data: { 'foo': 'foo' } }
+        date = new Date()
+        thisHour = date.getHours()
+        ampm = 'am'
+        if thisHour > 11 then ampm = 'pm'
+        if thisHour > 12 then thisHour = thisHour - 12
+        if thisHour is 0 then thisHour = 12
+
+        hourList = []
+        for hour in [(thisHour - 1)..(thisHour + 7)]
+          if hour > 12
+            hour = hour - 12
+            hourList.push hour + 'am'
+          else
+            hourList.push hour + 'pm'
+        res.send {
+          error: no,
+          teams: found.teams,
+          graphdata: {
+            labels: hourList,
+            series: [
+              [5, 9, 7, 8, 0, 0, 0, 0]
+            ]
+          }
+        }
       else
         LOG 'The user', req.session.username, 'doesnt have a DB entry...'
         res.send { error: 'youre not a real user...' }
@@ -51,6 +74,7 @@ module.exports = class UserController
               template = '<html><body><script>'
               template += 'document.cookie="x-chow-token=' + session.token + '; max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
               template += 'document.cookie="x-chow-token-expires=' + session.expires + '; '
+              template += 'document.cookie="x-chow-user=' + req.body.username + '; '
               template += 'max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
               template += 'document.location.href = "/";'
               template += '</script></body><html>'
