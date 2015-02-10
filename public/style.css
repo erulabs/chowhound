@@ -4517,8 +4517,10 @@ header .glyphicon-time {
 }
 footer {
   text-align: center;
+  position: fixed;
+  bottom: 8px;
+  left: 0px;
   width: 100%;
-  margin-top: 8em;
   font-size: 0.8em;
   color: #666;
 }
@@ -4541,6 +4543,9 @@ footer .glyphicon {
 }
 .less {
   color: #666;
+}
+label {
+  color: #ddd;
 }
 /* Chartist.js 0.5.0
  * Copyright © 2014 Gion Kunz

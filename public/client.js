@@ -2,15 +2,15 @@
 (function (global){
 'use strict';
 var AppWindow, BreakWindow, Chowhound, DatatableWindow, GraphWindow, LoginWindow, ManagerWindow, ProfileWindow, RegisterWindow, TeamsWindow, app,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __hasProp = {}.hasOwnProperty;
 
 app = angular.module('app', ['ngCookies', 'ui.bootstrap']);
 
 AppWindow = (function() {
-  function AppWindow(app, show) {
-    this.app = app;
-    this.show = show;
+  function AppWindow(_at_app, _at_show) {
+    this.app = _at_app;
+    this.show = _at_show;
     if (this.show == null) {
       this.show = false;
     }
@@ -100,92 +100,94 @@ ManagerWindow = (function(_super) {
 
 })(AppWindow);
 
-app.controller('chowhound', Chowhound = (function() {
-  function Chowhound($scope, $http, $cookies, $cookieStore, $location, $modal) {
-    var expires, token;
-    this.$scope = $scope;
-    this.$http = $http;
-    this.$cookies = $cookies;
-    this.$cookieStore = $cookieStore;
-    this.$location = $location;
-    this.$modal = $modal;
-    this.STATS_INTERVAL = 10;
-    this.$scope.login = new LoginWindow(this);
-    this.$scope.register = new RegisterWindow(this);
-    this.$scope.profile = new ProfileWindow(this);
-    this.$scope.graph = new GraphWindow(this);
-    this.$scope.teams = new TeamsWindow(this);
-    this.$scope.datatable = new DatatableWindow(this);
-    this.$scope.manager = new ManagerWindow(this);
-    this.$scope["break"] = new BreakWindow(this);
-    token = this.$cookies['x-chow-token'];
-    expires = this.$cookies['x-chow-token-expires'];
-    if (expires < (new Date().getTime())) {
-      token = void 0;
-      this.logout();
+app.controller('chowhound', [
+  '$scope', '$http', '$cookies', '$cookieStore', '$location', '$modal', Chowhound = (function() {
+    function Chowhound(_at_$scope, _at_$http, _at_$cookies, _at_$cookieStore, _at_$location, _at_$modal) {
+      var expires, token;
+      this.$scope = _at_$scope;
+      this.$http = _at_$http;
+      this.$cookies = _at_$cookies;
+      this.$cookieStore = _at_$cookieStore;
+      this.$location = _at_$location;
+      this.$modal = _at_$modal;
+      this.STATS_INTERVAL = 10;
+      this.$scope.login = new LoginWindow(this);
+      this.$scope.register = new RegisterWindow(this);
+      this.$scope.profile = new ProfileWindow(this);
+      this.$scope.graph = new GraphWindow(this);
+      this.$scope.teams = new TeamsWindow(this);
+      this.$scope.datatable = new DatatableWindow(this);
+      this.$scope.manager = new ManagerWindow(this);
+      this.$scope["break"] = new BreakWindow(this);
+      token = this.$cookies['x-chow-token'];
+      expires = this.$cookies['x-chow-token-expires'];
+      if (expires < (new Date().getTime())) {
+        token = void 0;
+        this.logout();
+      }
+      if (token != null) {
+        this.initData();
+      } else {
+        this.$scope.login.show = true;
+      }
     }
-    if (token != null) {
-      this.initData();
-    } else {
-      this.$scope.login.show = true;
-    }
-  }
 
-  Chowhound.prototype.logout = function() {
-    this.$cookieStore.remove('x-chow-token');
-    this.$cookieStore.remove('x-chow-token-expires');
-    return this.$scope.login.show = true;
-  };
+    Chowhound.prototype.logout = function() {
+      this.$cookieStore.remove('x-chow-token');
+      this.$cookieStore.remove('x-chow-token-expires');
+      return this.$scope.login.show = true;
+    };
 
-  Chowhound.prototype.initData = function() {
-    return this.get('/data').success((function(_this) {
-      return function(data, status, headers) {
-        if (data.error) {
-          return _this.logout();
-        } else {
-          return _this.$scope.login.login(data);
-        }
-      };
-    })(this)).error((function(_this) {
-      return function(data, status, headers) {
-        if (status === 404) {
-          return _this.logout();
-        }
-      };
-    })(this));
-  };
+    Chowhound.prototype.initData = function() {
+      return this.get('/data').success((function(_this) {
+        return function(data, status, headers) {
+          if (data.error) {
+            return _this.logout();
+          } else {
+            return _this.$scope.login.login(data);
+          }
+        };
+      })(this)).error((function(_this) {
+        return function(data, status, headers) {
+          if (status === 404) {
+            return _this.logout();
+          }
+        };
+      })(this));
+    };
 
-  Chowhound.prototype.http = function(options) {
-    if (options.headers == null) {
-      options.headers = {};
-    }
-    if (this.$cookies['x-chow-token'] != null) {
-      options.headers['x-chow-token'] = this.$cookies['x-chow-token'].replace(/"/g, '');
-    }
-    return this.$http(options);
-  };
+    Chowhound.prototype.http = function(options) {
+      if (options.headers == null) {
+        options.headers = {};
+      }
+      if (this.$cookies['x-chow-token'] != null) {
+        options.headers['x-chow-token'] = this.$cookies['x-chow-token'].replace(/"/g, '');
+      }
+      return this.$http(options);
+    };
 
-  Chowhound.prototype.get = function(uri) {
-    return this.http({
-      method: 'GET',
-      url: '/api' + uri
-    });
-  };
+    Chowhound.prototype.get = function(uri) {
+      return this.http({
+        method: 'GET',
+        url: '/api' + uri
+      });
+    };
 
-  Chowhound.prototype.post = function(uri, data) {
-    if (data == null) {
-      data = {};
-    }
-    return this.http({
-      method: 'POST',
-      url: '/api' + uri,
-      data: data
-    });
-  };
+    Chowhound.prototype.post = function(uri, data) {
+      if (data == null) {
+        data = {};
+      }
+      return this.http({
+        method: 'POST',
+        url: '/api' + uri,
+        data: data
+      });
+    };
 
-  return Chowhound;
+    return Chowhound;
 
-})());
+  })()
+]);
 
 
 
@@ -193,15 +195,15 @@ app.controller('chowhound', Chowhound = (function() {
 },{"./controllers/login.coffee":2,"./controllers/profile.coffee":3,"./controllers/register.coffee":4,"./controllers/teams.coffee":5}],2:[function(require,module,exports){
 'use strict';
 var LoginWindow,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __hasProp = {}.hasOwnProperty;
 
 LoginWindow = (function(_super) {
   __extends(LoginWindow, _super);
 
-  function LoginWindow(app, show) {
-    this.app = app;
-    this.show = show;
+  function LoginWindow(_at_app, _at_show) {
+    this.app = _at_app;
+    this.show = _at_show;
     this.username = '';
     if (this.app.$cookies['x-chow-user'] != null) {
       this.username = this.app.$cookies['x-chow-user'];
@@ -237,8 +239,8 @@ module.exports = LoginWindow;
 },{}],3:[function(require,module,exports){
 'use strict';
 var ProfileWindow,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __hasProp = {}.hasOwnProperty;
 
 ProfileWindow = (function(_super) {
   __extends(ProfileWindow, _super);
@@ -307,15 +309,15 @@ module.exports = ProfileWindow;
 },{}],4:[function(require,module,exports){
 'use strict';
 var RegisterWindow,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __hasProp = {}.hasOwnProperty;
 
 RegisterWindow = (function(_super) {
   __extends(RegisterWindow, _super);
 
-  function RegisterWindow(app, show) {
-    this.app = app;
-    this.show = show;
+  function RegisterWindow(_at_app, _at_show) {
+    this.app = _at_app;
+    this.show = _at_show;
     this.username = '';
     this.password = '';
     this.password_confirm = '';
@@ -383,8 +385,8 @@ module.exports = RegisterWindow;
 },{}],5:[function(require,module,exports){
 'use strict';
 var TeamsWindow,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __hasProp = {}.hasOwnProperty;
 
 TeamsWindow = (function(_super) {
   __extends(TeamsWindow, _super);
