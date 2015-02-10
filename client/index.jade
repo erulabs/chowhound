@@ -13,81 +13,17 @@ html(lang="en")
       span und
 
     .app(data-ng-controller="chowhound")
-      .menu(data-ng-show="!login.show && stats.teams.length")
+      .menu(data-ng-show="!login.show && teams.teams.length")
         button.item.btn.btn-default.btn-xs(data-ng-click="profile.show = !profile.show", data-ng-class="{ active: profile.show }") Profile
-        button.item.btn.btn-default.btn-xs(data-ng-show="stats.isManager", data-ng-click="manager.show = !manager.show", data-ng-class="{ active: manager.show }") Manager
+        button.item.btn.btn-default.btn-xs(data-ng-show="teams.isManager", data-ng-click="manager.show = !manager.show", data-ng-class="{ active: manager.show }") Manager
         .break
           button.btn.btn-primary(data-ng-click="break.show = !break.show", data-ng-class="{ active: break.show }") Take off
 
-      .login(data-ng-show="login.show")
-        .panel.panel-primary
-          .panel-heading Login
-          .panel-body.text-center
-            form(method="post", action="/api/login", enctype='application/json')
-              .form-group
-                input(type="text", class="form-control", placeholder="Email", name='username')
-                input(type="password", class="form-control", placeholder="Password", name='password')
-                button.btn.btn-primary(type="submit") Submit
-            a(href="#", data-ng-click="login.register()") Sign up
-
-      .register(data-ng-show="register.show")
-        .panel.panel-primary
-          .panel-heading Register
-          .panel-body
-            form(data-ng-submit="register.submit()")
-              .form-group
-                input(type="email", class="form-control", placeholder="Email", data-ng-model="register.username")
-                input(type="password", class="form-control", placeholder="Password", data-ng-model="register.password")
-                input(type="groups", class="form-control", placeholder="Groups, if, any", data-ng-model="register.groups")
-                div.
-                  Some sort of schedule picker here
-                button.btn.btn-primary(type="submit") Sign up
-            a(href="#", data-ng-click="register.back()") Back
-
-      .break(data-ng-show="break.show && stats.teams.length").col-md-6.col-md-offset-3
-        .panel.panel-primary
-          .panel-heading Break
-          .panel-body Take break
-
-      .profile(data-ng-show="profile.show || !stats.teams.length").col-md-6.col-md-offset-3
-        .warn.text-center(data-ng-show="!stats.teams.length && !login.show && !register.show")
-          div
-            span You are not currently assigned to a team!
-            br
-            span Ask for an invite from anyone on the team, or
-          div
-            button.btn.btn-primary.padded(data-ng-show="!showJoinTeam", data-ng-click="showJoinTeam = !showJoinTeam") Create a new team!
-            div(data-ng-show="showJoinTeam")
-              form(data-ng-submit="profile.createTeam(newCreateTeamName)")
-                .input-group.padded
-                  input(type="text", class="form-control", placeholder="Choose a new team name!", data-ng-model="newCreateTeamName")
-                  span.input-group-btn
-                    button.btn.btn-default(type="button", data-ng-click="profile.createTeam(newCreateTeamName)") Create!
-
-        .panel.panel-primary(data-ng-show="stats.teams.length")
-          .panel-heading Profile
-          .panel-body
-            div You're current a member of the following teams:
-            div(data-ng-repeat="team in stats.teams") {{ team }}
-
-      .teams(data-ng-show="stats.show").col-md-12
-        div(data-ng-show="stats.teams.length")
-          div(data-ng-repeat="team in stats.teams")
-
-            .teamHeader.col-md-6.col-md-offset-3 Current team: {{ team }}
-
-            .manager(data-ng-show="manager.show").col-md-6.col-md-offset-3
-              .panel.panel-primary
-                .panel-heading Manager
-                .panel-body Manager form
-
-            .graph(data-ng-show="graph.show && stats.teams.length").col-md-6.col-md-offset-3
-              .panel.panel-primary
-                .panel-body.ct-chart
-
-            .datatable(data-ng-show="datatable.show && stats.teams.length").col-md-6.col-md-offset-3
-              div Data table
-
+      include ./views/login.jade
+      include ./views/register.jade
+      include ./views/break.jade
+      include ./views/profile.jade
+      include ./views/teams.jade
 
       footer.col-md-12
         div

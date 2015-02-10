@@ -1,0 +1,14 @@
+.register(data-ng-show="register.show")
+  .panel.panel-primary
+    .panel-heading Register
+    .panel-body
+      form(data-ng-submit="register.submit()")
+        .form-group
+          input(type="email", class="form-control", placeholder="Email", data-ng-model="register.username")
+          input(type="password", class="form-control", placeholder="Password", data-ng-model="register.password")
+          input(type="groups", class="form-control", placeholder="Groups, if, any", data-ng-model="register.groups")
+
+          timepicker(data-ng-model="register.starttime", data-ng-change="register.starttimeChanged()" hour-step="1" minute-step="15" show-meridian="ismeridian")
+
+          button.btn.btn-primary(type="submit") Sign up
+      a(href="#", data-ng-click="register.back()") Back

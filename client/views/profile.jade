@@ -1,0 +1,19 @@
+.profile(data-ng-show="profile.show || !teams.teams.length").col-md-6.col-md-offset-3
+  .warn.text-center(data-ng-show="!teams.teams.length && !login.show && !register.show")
+    div
+      span You are not currently assigned to a team!
+      br
+      span Ask for an invite from anyone on the team, or
+    div
+      button.btn.btn-primary.padded(data-ng-show="!showJoinTeam", data-ng-click="showJoinTeam = !showJoinTeam") Create a new team!
+      div(data-ng-show="showJoinTeam")
+        form(data-ng-submit="profile.createTeam(newCreateTeamName)")
+          .input-group.padded
+            input(type="text", class="form-control", placeholder="Choose a new team name!", data-ng-model="newCreateTeamName")
+            span.input-group-btn
+              button.btn.btn-default(type="button", data-ng-click="profile.createTeam(newCreateTeamName)") Create!
+  .panel.panel-primary(data-ng-show="teams.teams.length")
+    .panel-heading Profile
+    .panel-body
+      div You're current a member of the following teams:
+      div(data-ng-repeat="team in teams.teams") {{ team }}

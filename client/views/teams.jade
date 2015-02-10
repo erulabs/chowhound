@@ -1,0 +1,13 @@
+.teams(data-ng-show="teams.show").col-md-12
+  div(data-ng-show="teams.teams.length")
+    div(data-ng-repeat="team in teams.teams")
+      .teamHeader.col-md-6.col-md-offset-3 Current team: {{ team }}
+      .manager(data-ng-show="manager.show").col-md-6.col-md-offset-3
+        .panel.panel-primary
+          .panel-heading Manager
+          .panel-body Manager form
+      .graph(data-ng-show="graph.show && teams.teams.length").col-md-6.col-md-offset-3
+        .panel.panel-primary
+          .panel-body.ct-chart
+      .datatable(data-ng-show="datatable.show && teams.teams.length").col-md-6.col-md-offset-3
+        div Data table

@@ -1,0 +1,10 @@
+.login(data-ng-show="login.show")
+  .panel.panel-primary
+    .panel-heading Login
+    .panel-body.text-center
+      form(method="post", action="/api/login", enctype='application/json')
+        .form-group
+          input(type="text", class="form-control", placeholder="Email", name='username')
+          input(type="password", class="form-control", placeholder="Password", name='password')
+          button.btn.btn-primary(type="submit") Submit
+      a(href="#", data-ng-click="login.register()") Sign up

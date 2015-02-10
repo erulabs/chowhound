@@ -1,110 +1,22 @@
 'use strict'
 
-app = angular.module 'app', ['ngCookies']
-
-STATS_INTERVAL = 10
+app = angular.module 'app', ['ngCookies', 'ui.bootstrap']
 
 class AppWindow
   constructor: (@app, @show) ->
     if !@show? then @show = no
 
-class LoginWindow extends AppWindow
-  constructor: (@app, @show) ->
-    @username = ''
-    if @app.$cookies['x-chow-user']?
-      @username = @app.$cookies['x-chow-user']
-    @password = ''
-  register: ->
-    @show = false
-    @app.$scope.register.show = yes
-  login: (data) ->
-    @app.$scope.datatable.init()
-    @app.$scope.profile.init()
-    @app.$scope.stats.init()
-    @app.$scope.stats.show = yes
-    @app.$scope.stats.teams = Object.keys(data.teams)
-    @app.$scope.stats.begin(STATS_INTERVAL)
-    if @app.$scope.stats.teams.length > 0
-      @app.$scope.graph.init(data)
+global.AppWindow = AppWindow
 
-class RegisterWindow extends AppWindow
-  constructor: (@app, @show) ->
-    @username = ''
-    @password = ''
-    @groups = ''
-  submit: ->
-    @app.post('/register', {
-      username: @username
-      password: @password
-      groups: @groups
-    })
-      .success (data, status, headers, config) =>
-        if data.error
-          alert data.error
-        else
-          @show = false
-          @app.$cookies['x-chow-token'] = data.token
-          @app.$cookies['x-chow-user'] = @username
-          @app.$cookies['x-chow-token-expires'] = data.expires
-          @app.$scope.login.login(data)
-      .error (data, status, headers, config) ->
-        console.log 'error', data
-  back: ->
-    @show = false
-    @app.$scope.login.show = yes
-
-class ProfileWindow extends AppWindow
-  init: ->
-    @show = no
-    @username = @app.$cookies['x-chow-user']
-  logout: ->
-    @app.post '/logout'
-      .success (data, status, headers, config) =>
-        if data.error
-          alert data.error
-        else
-          @app.$cookieStore.remove 'x-chow-token'
-          @app.$cookieStore.remove 'x-chow-token-expires'
-          @app.$scope.login.show = yes
-          @app.$scope.graph.show = no
-          @app.$scope.datatable.show = no
-          @app.$scope.profile.show = no
-          @app.$scope.manager.show = no
-          @app.$scope.stats.show = no
-      .error (data, status, headers, config) ->
-        console.log 'error', data
-  createTeam: (teamName) ->
-    @app.post '/new/team', { name: teamName }
-      .success (data, status, headers, config) =>
-        if data.error
-          alert data.error
-        else
-          @app.initData()
-      .error (data, status, headers, config) ->
-        console.log 'error', data
+LoginWindow = require './controllers/login.coffee'
+RegisterWindow = require './controllers/register.coffee'
+ProfileWindow = require './controllers/profile.coffee'
 
 class BreakWindow extends AppWindow
   init: ->
     @show = no
 
-class StatsWindow extends AppWindow
-  init: ->
-    @show = no
-    @teams = []
-    @isManager = false
-    @graphData = {}
-  # Update the stats every interval
-  begin: (interval) ->
-    setInterval =>
-      @app.get '/data'
-        .success (data, status, headers) =>
-          if data.error
-            @logout()
-          else
-            if data.teams.length > 0
-              @app.$scope.graph.update data
-        .error (data, status, headers) => if status is 404 then @logout()
-    , interval * 1000
+TeamsWindow = require './controllers/teams.coffee'
 
 class GraphWindow extends AppWindow
   init: (initialData) ->
@@ -128,11 +40,12 @@ class ManagerWindow extends AppWindow
 
 app.controller 'chowhound', class Chowhound
   constructor: (@$scope, @$http, @$cookies, @$cookieStore, @$location) ->
+    this.STATS_INTERVAL = 10
     @$scope.login = new LoginWindow this
     @$scope.register = new RegisterWindow this
     @$scope.profile = new ProfileWindow this
     @$scope.graph = new GraphWindow this
-    @$scope.stats = new StatsWindow this
+    @$scope.teams = new TeamsWindow this
     @$scope.datatable = new DatatableWindow this
     @$scope.manager = new ManagerWindow this
     @$scope.break = new BreakWindow this

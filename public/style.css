@@ -4336,7 +4336,7 @@ header .glyphicon-time {
   border-color: black;
   background-color: #22527b !important;
 }
-.stats {
+.teams {
   text-align: center;
 }
 .login,
@@ -4348,6 +4348,9 @@ header .glyphicon-time {
 .register .panel {
   width: 300px;
   margin: 0 auto;
+  border-radius: 0px !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
 }
 .login .panel .panel-body,
 .register .panel .panel-body {
