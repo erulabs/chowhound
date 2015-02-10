@@ -101,13 +101,14 @@ ManagerWindow = (function(_super) {
 })(AppWindow);
 
 app.controller('chowhound', Chowhound = (function() {
-  function Chowhound($scope, $http, $cookies, $cookieStore, $location) {
+  function Chowhound($scope, $http, $cookies, $cookieStore, $location, $modal) {
     var expires, token;
     this.$scope = $scope;
     this.$http = $http;
     this.$cookies = $cookies;
     this.$cookieStore = $cookieStore;
     this.$location = $location;
+    this.$modal = $modal;
     this.STATS_INTERVAL = 10;
     this.$scope.login = new LoginWindow(this);
     this.$scope.register = new RegisterWindow(this);
@@ -247,8 +248,15 @@ ProfileWindow = (function(_super) {
   }
 
   ProfileWindow.prototype.init = function() {
-    this.show = false;
-    return this.username = this.app.$cookies['x-chow-user'];
+    this.username = this.app.$cookies['x-chow-user'];
+    return this.show = true;
+  };
+
+  ProfileWindow.prototype.modalTrigger = function() {
+    var modal;
+    return modal = this.app.$modal.open({
+      templateUrl: 'breakModalContent'
+    });
   };
 
   ProfileWindow.prototype.logout = function() {

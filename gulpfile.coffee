@@ -139,7 +139,7 @@ gulp.task 'watch', ->
     doWatch conf
   setTimeout ->
     seq 'todos', 'spec'
-  , 2000
+  , 5000
 
 # Start gulp-watch with a task configuration
 doWatch = (conf) ->

@@ -2,8 +2,12 @@
 
 class ProfileWindow extends AppWindow
   init: ->
-    @show = no
     @username = @app.$cookies['x-chow-user']
+    @show = true
+  modalTrigger: ->
+    modal = @app.$modal.open {
+      templateUrl: 'breakModalContent'
+    }
   logout: ->
     @app.post '/logout'
       .success (data, status, headers, config) =>

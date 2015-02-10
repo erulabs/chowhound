@@ -5,7 +5,7 @@ module.exports = class UserController
     user = new User()
     user.load req.session.username, (found) ->
       if found
-        console.log 'found your user, you have the following teams:', found.teams
+        # user.teams...
         date = new Date()
         thisHour = date.getHours()
         ampm = 'am'

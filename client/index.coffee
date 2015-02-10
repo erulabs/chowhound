@@ -39,7 +39,7 @@ class DatatableWindow extends AppWindow
 class ManagerWindow extends AppWindow
 
 app.controller 'chowhound', class Chowhound
-  constructor: (@$scope, @$http, @$cookies, @$cookieStore, @$location) ->
+  constructor: (@$scope, @$http, @$cookies, @$cookieStore, @$location, @$modal) ->
     this.STATS_INTERVAL = 10
     @$scope.login = new LoginWindow this
     @$scope.register = new RegisterWindow this

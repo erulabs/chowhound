@@ -14,7 +14,7 @@ html(lang="en")
 
     .app(data-ng-controller="chowhound")
       .menu(data-ng-show="!login.show && teams.teams.length")
-        button.item.btn.btn-default.btn-xs(data-ng-click="profile.show = !profile.show", data-ng-class="{ active: profile.show }") Profile
+        button#profileJewel.item.btn.btn-default.btn-xs(data-ng-click="profile.modalTrigger()", data-ng-class="{ active: profile.show }") Profile
         button.item.btn.btn-default.btn-xs(data-ng-show="teams.isManager", data-ng-click="manager.show = !manager.show", data-ng-class="{ active: manager.show }") Manager
         .break
           button.btn.btn-primary(data-ng-click="break.show = !break.show", data-ng-class="{ active: break.show }") Take off
