@@ -310,9 +310,22 @@ RegisterWindow = (function(_super) {
     this.show = show;
     this.username = '';
     this.password = '';
-    this.groups = '';
+    this.password_confirm = '';
     this.starttime = new Date();
+    this.starttime.setHours(9);
+    this.starttime.setMinutes(0);
     this.endtime = new Date();
+    this.endtime.setMinutes(0);
+    this.endtime.setHours(17);
+    this.dotw = {
+      mon: 1,
+      tue: 1,
+      wed: 1,
+      thu: 1,
+      fri: 1,
+      sat: 0,
+      sun: 0
+    };
   }
 
   RegisterWindow.prototype.starttimeChanged = function() {
@@ -320,10 +333,15 @@ RegisterWindow = (function(_super) {
   };
 
   RegisterWindow.prototype.submit = function() {
+    if (this.password !== this.password_confirm) {
+      return alert('Passwords do not match');
+    }
     return this.app.post('/register', {
       username: this.username,
       password: this.password,
-      groups: this.groups
+      starttime: this.starttime,
+      endtime: this.endtime,
+      dotw: this.dotw
     }).success((function(_this) {
       return function(data, status, headers, config) {
         if (data.error) {

@@ -60,7 +60,11 @@ describe 'API security', ->
     newPass = randtoken.uid 16
     it 'will create user "' + newUser + '" with password "' + newPass + '"', (done) ->
       request.post HOST + '/api/register', { form: {
-        username: newUser, password: newPass
+        username: newUser,
+        password: newPass,
+        starttime: new Date(),
+        endtime: new Date(),
+        dotw: { mon: 1, tue: 1, wed: 1, thu: 1, fri: 1, sat: 0, sun: 0 }
       } }, (error, resp, body) ->
         data = JSON.parse(resp.body)
         expect(data.error).to.equal(false)

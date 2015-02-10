@@ -5,6 +5,7 @@ module.exports = class UserController
     user = new User()
     user.load req.session.username, (found) ->
       if found
+        console.log 'found your user, you have the following teams:', found.teams
         date = new Date()
         thisHour = date.getHours()
         ampm = 'am'
@@ -72,9 +73,10 @@ module.exports = class UserController
               req.session.expires = session.expires
               req.session.username = req.body.username
               template = '<html><body><script>'
-              template += 'document.cookie="x-chow-token=' + session.token + '; max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
-              template += 'document.cookie="x-chow-token-expires=' + session.expires + '; max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
-              template += 'document.cookie="x-chow-user=' + req.body.username + '; max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
+              session_string = 'max-age=' + CONFIG.SESSIONLENGTH + '; path=/";'
+              template += 'document.cookie="x-chow-token=' + session.token + '; ' + session_string
+              template += 'document.cookie="x-chow-token-expires=' + session.expires + '; ' + session_string
+              template += 'document.cookie="x-chow-user=' + req.body.username + '; ' + session_string
               template += 'document.location.href = "/";'
               template += '</script></body></html>'
               res.set 'Content-Type', 'text/html'
@@ -92,7 +94,7 @@ module.exports = class UserController
       res.redirect '/'
 
   register: (req, res) ->
-    if !req.body.username? or !req.body.password?
+    if !req.body.username? or !req.body.password? or !req.body.starttime? or !req.body.endtime? or !req.body.dotw?
       console.log 'request body was', req.body
       res.send { error: 'Supply a username and password' }
     else
@@ -104,6 +106,9 @@ module.exports = class UserController
           user.username = req.body.username
           user.password = req.body.password
           user.registered = (new Date().getTime())
+          user.starttime = req.body.starttime
+          user.endtime = req.body.endtime
+          user.dotw = req.body.dotw
           session = user.newSessionToken()
           req.session.token = session.token
           req.session.expires = session.expires

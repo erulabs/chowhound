@@ -4,16 +4,33 @@ class RegisterWindow extends AppWindow
   constructor: (@app, @show) ->
     @username = ''
     @password = ''
-    @groups = ''
+    @password_confirm = ''
     @starttime = new Date()
+    @starttime.setHours 9
+    @starttime.setMinutes 0
     @endtime = new Date()
+    @endtime.setMinutes 0
+    @endtime.setHours 17
+    @dotw = {
+      mon: 1
+      tue: 1
+      wed: 1
+      thu: 1
+      fri: 1
+      sat: 0
+      sun: 0
+    }
   starttimeChanged: ->
     console.log @starttime
   submit: ->
+    if @password isnt @password_confirm
+      return alert 'Passwords do not match'
     @app.post('/register', {
       username: @username
       password: @password
-      groups: @groups
+      starttime: @starttime
+      endtime: @endtime
+      dotw: @dotw
     })
       .success (data, status, headers, config) =>
         if data.error

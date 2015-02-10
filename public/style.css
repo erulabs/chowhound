@@ -3580,11 +3580,6 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 }
 .panel {
   margin-bottom: 20px;
-  background-color: #ffffff;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 .panel-body {
   padding: 15px;
@@ -3611,8 +3606,6 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   padding: 10px 15px;
   background-color: #f5f5f5;
   border-top: 1px solid #dddddd;
-  border-bottom-right-radius: 3px;
-  border-bottom-left-radius: 3px;
 }
 .panel > .list-group,
 .panel > .panel-collapse > .list-group {
@@ -4389,6 +4382,9 @@ header .glyphicon-time {
   color: #000;
   background-color: transparent !important;
 }
+.timepicker {
+  margin: 0 auto;
+}
 footer {
   text-align: center;
   width: 100%;
@@ -4402,6 +4398,9 @@ footer .glyphicon {
 }
 .text-center {
   text-align: center;
+}
+.center-margin {
+  margin: 0 auto;
 }
 .warn {
   font-size: 1.2em;
