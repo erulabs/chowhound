@@ -67,7 +67,7 @@ module.exports = class UserController
         if found
           SHA1 req.body.password, (password) ->
             # LOG 'found user', found
-            if found.password is password
+            if found.encrypted is password
               session = user.newSessionToken()
               req.session.token = session.token
               req.session.expires = session.expires

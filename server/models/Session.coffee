@@ -1,6 +1,8 @@
 'use strict'
 
 Model = require './Model.coffee'
+rand_token = require 'rand-token'
+UID = rand_token.uid
 
 module.exports = class Session extends Model
   constructor: ->

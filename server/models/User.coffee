@@ -7,6 +7,7 @@ module.exports = class User extends Model
     @key = 'username'
     @savable = {
       password: true
+      encrypted: true
       username: true
       registered: true
       teams: true
@@ -15,6 +16,7 @@ module.exports = class User extends Model
       endtime: true
     }
     @password = ''
+    @encrypted = ''
     @username = ''
     @registered = false
     @teams = {}
@@ -32,7 +34,7 @@ module.exports = class User extends Model
   presave: (callback) ->
     self = this
     SHA1 self.password, (password) ->
-      self.password = password
+      self.encrypted = password
       callback()
   newSessionToken: ->
     session = new Session()

@@ -4,7 +4,7 @@ crypto = require 'crypto'
 
 global.LOG = ->
   date = new Date()
-  process.stdout.write(date.toTimeString().split(' ')[0] + ' ')
+  process.stdout.write '[' + date.toTimeString().split(' ')[0] + '] '
   if CONFIG.LOGPATH is 'stdout'
     console.log.apply this, arguments
   else

@@ -7,10 +7,13 @@ lib.express     = require 'express'
 lib.session     = require 'express-session'
 lib.bodyParser  = require 'body-parser'
 lib.multer      = require 'multer'
-lib.randtoken   = require 'rand-token'
 
-global.UID      = lib.randtoken.uid
 global.DB       = {}
+
+global.Model = require './models/Model.coffee'
+global.Team = require './models/Team.coffee'
+global.User = require './models/User.coffee'
+global.Session = require './models/Session.coffee'
 
 require './helpers.coffee'
 
@@ -35,11 +38,6 @@ module.exports = class Server
     @app.use lib.bodyParser.json()
     @app.use lib.bodyParser.urlencoded({ extended: true })
     @app.use lib.multer()
-
-    global.Model = require './models/Model.coffee'
-    global.Team = require './models/Team.coffee'
-    global.User = require './models/User.coffee'
-    global.Session = require './models/Session.coffee'
 
     @ctrlr = {}
     @ctrlr.User = new (require './controllers/User.coffee') this

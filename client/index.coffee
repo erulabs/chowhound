@@ -40,7 +40,7 @@ app.controller 'chowhound', [
       @$scope.break = new BreakWindow this
       token = @$cookies['x-chow-token']
       expires = @$cookies['x-chow-token-expires']
-      #@$scope.profile.username = @$cookies['x-chow-user']
+      @$scope.profile.username = @$cookies['x-chow-user']
       if expires < (new Date().getTime()) or !token? or !@$scope.profile.username?
         token = undefined
         @logout()

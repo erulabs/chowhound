@@ -28,7 +28,7 @@ html(lang="en")
       footer
         div
           span.glyphicon.glyphicon-fire
-        div(data-ng-show="teams.teams.length > 0")
+        div(data-ng-show="profile.username")
           span Logged in as {{ profile.username }} -&nbsp;
           a.less.item(data-ng-click="profile.logout()", href="#") Logout
         div

@@ -72,6 +72,7 @@ app.controller('chowhound', [
       this.$scope["break"] = new BreakWindow(this);
       token = this.$cookies['x-chow-token'];
       expires = this.$cookies['x-chow-token-expires'];
+      this.$scope.profile.username = this.$cookies['x-chow-user'];
       if (expires < (new Date().getTime()) || (token == null) || (this.$scope.profile.username == null)) {
         token = void 0;
         this.logout();
