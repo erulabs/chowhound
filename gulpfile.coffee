@@ -1,7 +1,7 @@
 'use strict'
 
 # Options which ought to be set via environment
-NODE_ENV = 'dev'
+NODE_ENV = 'redis-test'
 MINIFY = no # Uglify (minify) all scripts
 TODOS = yes # print TODOs found in code
 # afterEveryRun = [ 'spec' ] # tasks to run after EVERY set of tasks

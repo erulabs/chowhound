@@ -28,4 +28,4 @@ Because it's a lunch tracker, I don't care. It's super fast and super fun. Plus 
 
 ### Production instructions
 
-Nginx should listen on port 80 serving / out of the apps `./public` directory. It should proxy pass (ideally) on a socket file to the app all requests to ^/api/*. You should set an ENV (see ./shared/config.js) of something other than "dev", drop a newrelic.js file in the app root, `npm install --production`` and run `node server`. Make sure you have redis available and configured via ENV variables (again see ./shared/config.js). We use redis as a database, so please enable saving!
+Nginx should listen on port 80 serving / out of the apps `./public` directory. It should proxy pass (ideally) on a socket file to the app all requests to ^/api/*. You should set an NODE_ENV (see ./shared/config.js) of something other than "dev", drop a newrelic.js file in the app root, `npm install --production`` and run `node server`. Make sure you have redis available and configured via ENV variables (again see ./shared/config.js). We use redis as a database, so please enable saving!

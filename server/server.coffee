@@ -1,14 +1,14 @@
 'use strict'
 
 global.CONFIG   = require './../shared/config.js'
-global.ENV      = CONFIG.ENV
-if ENV isnt 'dev' then require 'newrelic'
+global.ENV      = CONFIG.NODE_ENV
+if ENV in ['prd', 'stg', 'qa'] then require 'newrelic'
 lib             = {}
 lib.express     = require 'express'
 lib.session     = require 'express-session'
+lib.redis       = require 'redis'
 lib.bodyParser  = require 'body-parser'
 lib.multer      = require 'multer'
-
 global.DB       = {}
 
 global.Model = require './models/Model.coffee'
@@ -20,14 +20,8 @@ require './helpers.coffee'
 
 module.exports = class Server
   init: ->
-    if ENV is 'dev'
-      lib.levelup = require 'levelup'
-      LOG 'Connecting to LevelDB at %s', CONFIG.DBPATH
-      global.DB = lib.levelup CONFIG.DBPATH
-    else
-      lib.redis = require 'redis'
-      LOG 'Connecting to Redis at %s:%s', CONFIG.DBSERVER, CONFIG.DBPORT
-      global.DB = lib.redis.createClient CONFIG.DBPORT, CONFIG.DBSERVER, {}
+    LOG 'Connecting to Redis at %s:%s', CONFIG.DBSERVER, CONFIG.DBPORT
+    global.DB = lib.redis.createClient CONFIG.DBPORT, CONFIG.DBSERVER, {}
 
     @app = lib.express()
     @app.use lib.session {

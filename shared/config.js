@@ -2,9 +2,9 @@
 
 var set = {};
 
-set.ENV = 'dev';
-if (process.env.ENV !== undefined) {
-  set.ENV = process.env.ENV;
+set.NODE_ENV = 'dev';
+if (process.env.NODE_ENV !== undefined) {
+  set.NODE_ENV = process.env.NODE_ENV;
 }
 
 set.LISTEN = 9000;
