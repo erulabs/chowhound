@@ -8,8 +8,7 @@ Chowhound is a NodeJS web app built with the following goodies:
 - browserify
 - bootstrap
 - angularjs
-- redis backend for staging, production DB
-- leveldb backend for easy development
+- redis
 
 ### Things to know
 
