@@ -16,10 +16,13 @@
     .modal-header
       h3.modal-title Profile for {{ profile.username }}
     .modal-body
-      div You're current a member of the following teams:
-      div(data-ng-repeat="team in teams.teams") {{ team }}
+      h3 Teams:
+      ul
+        li(data-ng-repeat="team in teams.teams") {{ team }}
 
-      include ./schedule.jade
+      h3 Schedule:
+      .text-center
+        include ./schedule.jade
 
       div.text-center
         button.btn.btn-primary(type="button", data-ng-click="profile.saveProfile()") Save

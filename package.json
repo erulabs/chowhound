@@ -28,6 +28,7 @@
     "express": "^4.10.7",
     "express-session": "^1.10.0",
     "multer": "^0.1.6",
+    "newrelic": "^1.16.1",
     "rand-token": "^0.2.1"
   },
   "devDependencies": {

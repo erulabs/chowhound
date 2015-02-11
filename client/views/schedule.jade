@@ -1,12 +1,12 @@
-.form-group.text-center
+.form-group
   label(for="timepicker_start") Work Starts at:
   timepicker#timepicker_start.timepicker(data-ng-model="register.starttime", data-ng-change="register.starttimeChanged()" hour-step="1" minute-step="15" show-meridian="ismeridian")
 
-.form-group.text-center
+.form-group
   label(for="timepicker_end") Work Ends at:
   timepicker#timepicker_end.timepicker(data-ng-model="register.endtime", data-ng-change="register.starttimeChanged()" hour-step="1" minute-step="15" show-meridian="ismeridian")
 
-.form-group.center-margin.text-center
+.form-group.center-margin
   label Which days do you work?
   div.small-margin-bottom
     button.btn.btn-xs.btn-default(data-ng-model="register.dotw.mon", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0")

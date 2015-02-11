@@ -2,6 +2,7 @@
 
 global.CONFIG   = require './../shared/config.js'
 global.ENV      = CONFIG.ENV
+if ENV isnt 'dev' then require 'newrelic'
 lib             = {}
 lib.express     = require 'express'
 lib.session     = require 'express-session'
