@@ -1,4 +1,4 @@
-.register(data-ng-show="register.show")
+.register.col-md-6.col-md-offset-3(data-ng-show="register.show")
   .panel.panel-primary
     .panel-heading Register
     .panel-body
@@ -11,6 +11,5 @@
         include ./schedule.jade
 
         .form-group
-          br
           button.btn.btn-primary(type="submit") Sign up
       a(href="#", data-ng-click="register.back()") Back

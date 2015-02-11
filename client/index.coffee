@@ -8,34 +8,13 @@ class AppWindow
 
 global.AppWindow = AppWindow
 
-LoginWindow = require './controllers/login.coffee'
-RegisterWindow = require './controllers/register.coffee'
-ProfileWindow = require './controllers/profile.coffee'
-
-class BreakWindow extends AppWindow
-  init: ->
-    @show = no
-
-TeamsWindow = require './controllers/teams.coffee'
-
-class GraphWindow extends AppWindow
-  init: (initialData) ->
-    @show = yes
-    @chart = {}
-    angular.element(document).ready =>
-      @chart = new Chartist.Line('.ct-chart', initialData.graphdata, {
-        low: 0,
-        showArea: true
-      })
-
-  update: (data) ->
-    console.log 'new data for graph', data
-    @chart.update data.graphdata
-
-class DatatableWindow extends AppWindow
-  init: ->
-    @show = yes
-
+LoginWindow     = require './controllers/login.coffee'
+RegisterWindow  = require './controllers/register.coffee'
+ProfileWindow   = require './controllers/profile.coffee'
+BreakWindow     = require './controllers/break.coffee'
+TeamsWindow     = require './controllers/teams.coffee'
+GraphWindow     = require './controllers/graph.coffee'
+DatatableWindow = require './controllers/datatable.coffee'
 class ManagerWindow extends AppWindow
 
 app.controller 'chowhound', [
@@ -49,6 +28,9 @@ app.controller 'chowhound', [
     constructor: (@$scope, @$http, @$cookies, @$cookieStore, @$location, @$modal) ->
       this.STATS_INTERVAL = 10
       @$scope.login = new LoginWindow this
+      loginError = location.search.split('error=')[1]
+      if loginError?
+        @$scope.login.error = loginError.replace(/%20/g, ' ')
       @$scope.register = new RegisterWindow this
       @$scope.profile = new ProfileWindow this
       @$scope.graph = new GraphWindow this
@@ -58,10 +40,11 @@ app.controller 'chowhound', [
       @$scope.break = new BreakWindow this
       token = @$cookies['x-chow-token']
       expires = @$cookies['x-chow-token-expires']
-      if expires < (new Date().getTime())
+      #@$scope.profile.username = @$cookies['x-chow-user']
+      if expires < (new Date().getTime()) or !token? or !@$scope.profile.username?
         token = undefined
         @logout()
-      if token?
+      else if token?
         @initData()
       else
         @$scope.login.show = yes

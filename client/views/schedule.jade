@@ -8,11 +8,31 @@
 
 .form-group.center-margin.text-center
   label Which days do you work?
-  div
-    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.mon", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0") Monday
-    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.tue", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0") Tueday
-    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.wed", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0") Wednesday
-    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.thu", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0") Thursay
-    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.fri", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0") Friday
-    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.sat", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0") Saturday
-    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.sun", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0") Sunday
+  div.small-margin-bottom
+    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.mon", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0")
+      span(data-ng-show="register.dotw.mon").glyphicon.glyphicon-check Monday
+      span(data-ng-hide="register.dotw.mon").glyphicon.glyphicon-unchecked Monday
+    span &nbsp;
+    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.tue", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0")
+      span(data-ng-show="register.dotw.tue").glyphicon.glyphicon-check Tueday
+      span(data-ng-hide="register.dotw.tue").glyphicon.glyphicon-unchecked Tueday
+    span &nbsp;
+    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.wed", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0")
+      span(data-ng-show="register.dotw.wed").glyphicon.glyphicon-check Wednesday
+      span(data-ng-hide="register.dotw.wed").glyphicon.glyphicon-unchecked Wednesday
+    span &nbsp;
+    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.thu", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0")
+      span(data-ng-show="register.dotw.thu").glyphicon.glyphicon-check Thursday
+      span(data-ng-hide="register.dotw.thu").glyphicon.glyphicon-unchecked Thursday
+    span &nbsp;
+    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.fri", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0")
+      span(data-ng-show="register.dotw.fri").glyphicon.glyphicon-check Friday
+      span(data-ng-hide="register.dotw.fri").glyphicon.glyphicon-unchecked Friday
+    span &nbsp;
+    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.sat", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0")
+      span(data-ng-show="register.dotw.sat").glyphicon.glyphicon-check Saturday
+      span(data-ng-hide="register.dotw.sat").glyphicon.glyphicon-unchecked Saturday
+    span &nbsp;
+    button.btn.btn-xs.btn-default(data-ng-model="register.dotw.sun", type="button", btn-checkbox, btn-checkbox-true="1", btn-checkbox-false="0")
+      span(data-ng-show="register.dotw.sun").glyphicon.glyphicon-check Sunday
+      span(data-ng-hide="register.dotw.sun").glyphicon.glyphicon-unchecked Sunday

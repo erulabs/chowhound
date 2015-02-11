@@ -28,66 +28,13 @@ RegisterWindow = require('./controllers/register.coffee');
 
 ProfileWindow = require('./controllers/profile.coffee');
 
-BreakWindow = (function(_super) {
-  __extends(BreakWindow, _super);
-
-  function BreakWindow() {
-    return BreakWindow.__super__.constructor.apply(this, arguments);
-  }
-
-  BreakWindow.prototype.init = function() {
-    return this.show = false;
-  };
-
-  return BreakWindow;
-
-})(AppWindow);
+BreakWindow = require('./controllers/break.coffee');
 
 TeamsWindow = require('./controllers/teams.coffee');
 
-GraphWindow = (function(_super) {
-  __extends(GraphWindow, _super);
+GraphWindow = require('./controllers/graph.coffee');
 
-  function GraphWindow() {
-    return GraphWindow.__super__.constructor.apply(this, arguments);
-  }
-
-  GraphWindow.prototype.init = function(initialData) {
-    this.show = true;
-    this.chart = {};
-    return angular.element(document).ready((function(_this) {
-      return function() {
-        return _this.chart = new Chartist.Line('.ct-chart', initialData.graphdata, {
-          low: 0,
-          showArea: true
-        });
-      };
-    })(this));
-  };
-
-  GraphWindow.prototype.update = function(data) {
-    console.log('new data for graph', data);
-    return this.chart.update(data.graphdata);
-  };
-
-  return GraphWindow;
-
-})(AppWindow);
-
-DatatableWindow = (function(_super) {
-  __extends(DatatableWindow, _super);
-
-  function DatatableWindow() {
-    return DatatableWindow.__super__.constructor.apply(this, arguments);
-  }
-
-  DatatableWindow.prototype.init = function() {
-    return this.show = true;
-  };
-
-  return DatatableWindow;
-
-})(AppWindow);
+DatatableWindow = require('./controllers/datatable.coffee');
 
 ManagerWindow = (function(_super) {
   __extends(ManagerWindow, _super);
@@ -103,7 +50,7 @@ ManagerWindow = (function(_super) {
 app.controller('chowhound', [
   '$scope', '$http', '$cookies', '$cookieStore', '$location', '$modal', Chowhound = (function() {
     function Chowhound(_at_$scope, _at_$http, _at_$cookies, _at_$cookieStore, _at_$location, _at_$modal) {
-      var expires, token;
+      var expires, loginError, token;
       this.$scope = _at_$scope;
       this.$http = _at_$http;
       this.$cookies = _at_$cookies;
@@ -112,6 +59,10 @@ app.controller('chowhound', [
       this.$modal = _at_$modal;
       this.STATS_INTERVAL = 10;
       this.$scope.login = new LoginWindow(this);
+      loginError = location.search.split('error=')[1];
+      if (loginError != null) {
+        this.$scope.login.error = loginError.replace(/%20/g, ' ');
+      }
       this.$scope.register = new RegisterWindow(this);
       this.$scope.profile = new ProfileWindow(this);
       this.$scope.graph = new GraphWindow(this);
@@ -121,11 +72,10 @@ app.controller('chowhound', [
       this.$scope["break"] = new BreakWindow(this);
       token = this.$cookies['x-chow-token'];
       expires = this.$cookies['x-chow-token-expires'];
-      if (expires < (new Date().getTime())) {
+      if (expires < (new Date().getTime()) || (token == null) || (this.$scope.profile.username == null)) {
         token = void 0;
         this.logout();
-      }
-      if (token != null) {
+      } else if (token != null) {
         this.initData();
       } else {
         this.$scope.login.show = true;
@@ -192,7 +142,113 @@ app.controller('chowhound', [
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./controllers/login.coffee":2,"./controllers/profile.coffee":3,"./controllers/register.coffee":4,"./controllers/teams.coffee":5}],2:[function(require,module,exports){
+},{"./controllers/break.coffee":2,"./controllers/datatable.coffee":3,"./controllers/graph.coffee":4,"./controllers/login.coffee":5,"./controllers/profile.coffee":6,"./controllers/register.coffee":7,"./controllers/teams.coffee":8}],2:[function(require,module,exports){
+'use strict';
+var BreakWindow,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __hasProp = {}.hasOwnProperty;
+
+BreakWindow = (function(_super) {
+  __extends(BreakWindow, _super);
+
+  function BreakWindow() {
+    return BreakWindow.__super__.constructor.apply(this, arguments);
+  }
+
+  BreakWindow.prototype.init = function() {
+    return this.show = false;
+  };
+
+  BreakWindow.prototype.modalTrigger = function() {
+    var $scope, modal;
+    $scope = this.app.$scope;
+    return modal = this.app.$modal.open({
+      templateUrl: 'breakModalContent',
+      controller: 'chowhound',
+      resolve: {
+        profile: function() {
+          return $scope.profile;
+        },
+        teams: function() {
+          return $scope.teams;
+        }
+      }
+    });
+  };
+
+  return BreakWindow;
+
+})(AppWindow);
+
+module.exports = BreakWindow;
+
+
+
+},{}],3:[function(require,module,exports){
+'use strict';
+var DatatableWindow,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __hasProp = {}.hasOwnProperty;
+
+DatatableWindow = (function(_super) {
+  __extends(DatatableWindow, _super);
+
+  function DatatableWindow() {
+    return DatatableWindow.__super__.constructor.apply(this, arguments);
+  }
+
+  DatatableWindow.prototype.init = function() {
+    return this.show = true;
+  };
+
+  return DatatableWindow;
+
+})(AppWindow);
+
+module.exports = DatatableWindow;
+
+
+
+},{}],4:[function(require,module,exports){
+'use strict';
+var GraphWindow,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __hasProp = {}.hasOwnProperty;
+
+GraphWindow = (function(_super) {
+  __extends(GraphWindow, _super);
+
+  function GraphWindow() {
+    return GraphWindow.__super__.constructor.apply(this, arguments);
+  }
+
+  GraphWindow.prototype.init = function(initialData) {
+    this.show = true;
+    this.chart = {};
+    return angular.element(document).ready((function(_this) {
+      return function() {
+        return _this.chart = new Chartist.Line('.ct-chart', initialData.graphdata, {
+          low: 0,
+          showArea: true
+        });
+      };
+    })(this));
+  };
+
+  GraphWindow.prototype.update = function(data) {
+    console.log('new data for graph', data);
+    return this.chart.update(data.graphdata);
+  };
+
+  return GraphWindow;
+
+})(AppWindow);
+
+module.exports = GraphWindow;
+
+
+
+},{}],5:[function(require,module,exports){
 'use strict';
 var LoginWindow,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -236,7 +292,7 @@ module.exports = LoginWindow;
 
 
 
-},{}],3:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 var ProfileWindow,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -250,14 +306,23 @@ ProfileWindow = (function(_super) {
   }
 
   ProfileWindow.prototype.init = function() {
-    this.username = this.app.$cookies['x-chow-user'];
     return this.show = true;
   };
 
   ProfileWindow.prototype.modalTrigger = function() {
-    var modal;
+    var $scope, modal;
+    $scope = this.app.$scope;
     return modal = this.app.$modal.open({
-      templateUrl: 'breakModalContent'
+      templateUrl: 'profileModalContent',
+      controller: 'chowhound',
+      resolve: {
+        profile: function() {
+          return $scope.profile;
+        },
+        teams: function() {
+          return $scope.teams;
+        }
+      }
     });
   };
 
@@ -267,19 +332,26 @@ ProfileWindow = (function(_super) {
         if (data.error) {
           return alert(data.error);
         } else {
-          _this.app.$cookieStore.remove('x-chow-token');
-          _this.app.$cookieStore.remove('x-chow-token-expires');
-          _this.app.$scope.login.show = true;
-          _this.app.$scope.graph.show = false;
-          _this.app.$scope.datatable.show = false;
-          _this.app.$scope.profile.show = false;
-          _this.app.$scope.manager.show = false;
-          return _this.app.$scope.teams.show = false;
+          return _this.doLogoutAction();
         }
       };
-    })(this)).error(function(data, status, headers, config) {
-      return console.log('error', data);
-    });
+    })(this)).error((function(_this) {
+      return function(data, status, headers, config) {
+        return _this.doLogoutAction();
+      };
+    })(this));
+  };
+
+  ProfileWindow.prototype.doLogoutAction = function() {
+    this.app.$cookieStore.remove('x-chow-token');
+    this.app.$cookieStore.remove('x-chow-token-expires');
+    this.app.$scope.login.show = true;
+    this.app.$scope.graph.show = false;
+    this.app.$scope.datatable.show = false;
+    this.app.$scope.profile.username = void 0;
+    this.app.$scope.profile.show = false;
+    this.app.$scope.manager.show = false;
+    return this.app.$scope.teams.show = false;
   };
 
   ProfileWindow.prototype.createTeam = function(teamName) {
@@ -306,7 +378,7 @@ module.exports = ProfileWindow;
 
 
 
-},{}],4:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 var RegisterWindow,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -382,7 +454,7 @@ module.exports = RegisterWindow;
 
 
 
-},{}],5:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict';
 var TeamsWindow,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },

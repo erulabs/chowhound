@@ -17,13 +17,13 @@ body {
 header {
   width: 100%;
   text-align: center;
-  margin-top: 25px;
+  margin-top: 10px;
   margin-bottom: 5px;
   font-size: 4em;
   font-family: 'Arbutus Slab', serif;
   color: #777;
   .glyphicon-time {
-    font-size: 0.55em;
+    font-size: 0.525em;
   }
 }
 
@@ -58,11 +58,8 @@ header {
 }
 
 .login, .register {
-  width: 100%;
   text-align: center;
   .panel {
-    width: 300px;
-    margin: 0 auto;
     border-radius: 0px !important;
     -webkit-box-shadow: none !important;
     box-shadow: none !important;
@@ -121,13 +118,21 @@ footer {
   }
 }
 
+@media (max-height:590px) {
+  footer {
+    display: none !important;
+  }
+}
+
 .text-center {
   text-align: center;
 }
 .center-margin {
   margin: 0 auto;
 }
-
+.small-margin-bottom {
+  margin-bottom: 1em;
+}
 .warn {
   font-size: 1.2em;
 }

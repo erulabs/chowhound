@@ -50,9 +50,9 @@ describe 'API security', ->
       expect(resp.statusCode).to.equal(404)
       done()
 
-  it 'should redirect back to the index on a login submission', (done) ->
+  it 'should redirect back to the index with an error on a login submission', (done) ->
     request.post HOST + '/api/login', { username: 'asgfd24352', password: 'fake' }, (error, resp, body) ->
-      expect(resp.body).to.equal('Moved Temporarily. Redirecting to /')
+      expect(resp.body).to.equal('Moved Temporarily. Redirecting to /?error=No%20such%20user')
       done()
 
   describe 'should register properly', ->

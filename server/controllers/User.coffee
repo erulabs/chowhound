@@ -84,19 +84,27 @@ module.exports = class UserController
             else
               LOG 'loginRequest: failed log in for:', req.body.username, '- Password does not match:', found.password, password
               req.session.destroy()
-              res.redirect '/'
+              res.redirect '/?error=No such user'
         else
           LOG 'loginRequest: failed log in for:', req.body.username, '- No username found by name', req.body.username
           req.session.destroy()
-          res.redirect '/'
+          res.redirect '/?error=No such user'
     else
       req.session.destroy()
-      res.redirect '/'
+      res.redirect '/?error=No such user'
 
   register: (req, res) ->
-    if !req.body.username? or !req.body.password? or !req.body.starttime? or !req.body.endtime? or !req.body.dotw?
-      console.log 'request body was', req.body
+    user = req.body.username
+    pass = req.body.password
+    start = req.body.starttime
+    end = req.body.endtime
+    dotw = req.body.dotw
+    if !user? or !pass? or !start? or !end? or !dotw?
       res.send { error: 'Supply a username and password' }
+    else if user.length < 4
+      res.send { error: 'Username must be longer than 4 characters' }
+    else if pass.length < 5
+      res.send { error: 'Password must be longer than 5 characters' }
     else
       user = new User()
       user.load req.body.username, (found) ->
