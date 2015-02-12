@@ -21,7 +21,7 @@ header {
   margin-bottom: 5px;
   font-size: 4em;
   font-family: 'Arbutus Slab', serif;
-  color: #777;
+  color: #aaa;
   .glyphicon-time {
     font-size: 0.525em;
   }
@@ -50,7 +50,11 @@ header {
 #profileJewel {
   position: fixed;
   top: 0;
-  left: 0;
+  right: 0;
+  font-size: 2em;
+  margin: 10px;
+  color: #aaa;
+  cursor: pointer;
 }
 
 .teams {
@@ -104,6 +108,15 @@ header {
   margin: 0 auto;
 }
 
+@keyframes pulsatered {
+  0% { color: #733434;}
+  50% { color: #AB2C2C;}
+}
+@-webkit-keyframes pulsatered {
+  0% { color: #733434;}
+  50% { color: #AB2C2C;}
+}
+
 footer {
   text-align: center;
   position: fixed;
@@ -112,9 +125,17 @@ footer {
   width: 100%;
   font-size: 0.8em;
   color: #666;
-  .glyphicon {
-    font-size: 1.9em;
-    color: #733434;
+  div {
+    .glyphicon {
+      font-size: 1.9em;
+      color: #733434;
+      animation: pulsatered 5s infinite;
+      -webkit-animation: pulsatered 5s infinite;
+      position: relative;
+      top: 0.3em;
+      margin-left: 3px;
+      margin-right: 3px;
+    }
   }
 }
 
@@ -135,6 +156,12 @@ footer {
 }
 .warn {
   font-size: 1.2em;
+}
+.panel-warning {
+  .panel-body {
+    color: #ddd;
+    font-size: 1.4em;
+  }
 }
 
 .padded {

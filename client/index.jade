@@ -14,7 +14,7 @@ html(lang="en")
 
     .app(data-ng-controller="chowhound")
       .menu(data-ng-show="!login.show && teams.teams.length")
-        button#profileJewel.item.btn.btn-default.btn-xs(data-ng-click="profile.modalTrigger()", data-ng-class="{ active: profile.show }") Profile
+        span#profileJewel.glyphicon.glyphicon-cog(data-ng-click="profile.modalTrigger()")
         button.item.btn.btn-default.btn-xs(data-ng-show="teams.isManager", data-ng-click="manager.show = !manager.show", data-ng-class="{ active: manager.show }") Manager
         .break
           button.btn.btn-primary(data-ng-click="break.modalTrigger()") Take off
@@ -27,15 +27,9 @@ html(lang="en")
 
       footer
         div
-          span.glyphicon.glyphicon-fire
-        div(data-ng-show="profile.username")
-          span Logged in as {{ profile.username }} -&nbsp;
-          a.less.item(data-ng-click="profile.logout()", href="#") Logout
-        div
-          span &nbsp;by&nbsp;
-          a.less(href="http://seandonmooy.com", target="_blank") Seandon Mooy
-          span &nbsp;-&nbsp;
-          a.less(href="http://github.com/erulabs/chowhound", target="_blank") check the github
+          a.less(href="http://seandonmooy.com", target="_blank") By Seandon Mooy
+          span.glyphicon.glyphicon-heart-empty
+          a.less(href="http://github.com/erulabs/chowhound", target="_blank") Check the code!
 
     script(type='text/javascript', src=assetURL + 'vendor.js')
     script(type='text/javascript', src=assetURL + 'client.js')

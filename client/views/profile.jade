@@ -16,6 +16,9 @@
     .modal-header
       h3.modal-title Profile for {{ profile.username }}
     .modal-body
+      div.text-center(data-ng-show="profile.username")
+        span Logged in as {{ profile.username }} -&nbsp;
+        a.item(data-ng-click="profile.logout()", href="#") Logout
       h3 Teams:
       ul
         li(data-ng-repeat="team in teams.teams") {{ team }}
